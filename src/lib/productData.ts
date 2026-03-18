@@ -3,8 +3,10 @@
 export type ProductVariation = {
   id: string;
   label: string;
+  subLabel: string;
   price: number;
   stock: number;
+  badge?: string;
 };
 
 export type Product = {
@@ -22,16 +24,52 @@ export type Product = {
   variations?: ProductVariation[];
 };
 
+const detoxPlans = [
+  {
+    key: "reset",
+    label: "Urban Reset",
+    subLabel: "1 Day Detox",
+    price: 79,
+    stock: 80,
+  },
+  {
+    key: "cleanse",
+    label: "Urban Cleanse",
+    subLabel: "7 Day Detox",
+    price: 499,
+    stock: 50,
+    badge: "Most Popular",
+  },
+  {
+    key: "transform",
+    label: "Urban Transformation",
+    subLabel: "28 Day Detox",
+    price: 1999,
+    stock: 30,
+    badge: "Best Value",
+  },
+];
+
+const createVariations = (productId: string): ProductVariation[] =>
+  detoxPlans.map((plan) => ({
+    id: `${productId}-${plan.key}`,
+    label: plan.label,
+    subLabel: plan.subLabel,
+    price: plan.price,
+    stock: plan.stock,
+    badge: plan.badge,
+  }));
+
 export const hardcodedProducts: Product[] = [
   {
     id: "p1",
     name: "Ash Gourd Juice",
     category: "Ash Gourd",
-    description: `Ash Gourd Detox Juice — Pure. Refreshing. Naturally Cleansing.
+    description: `Ash Gourd Detox Juice — Pure. Cooling. Deeply Cleansing.
 
-Start your day with the natural goodness of fresh Ash Gourd Juice, known for its cooling and detoxifying properties. This refreshing blend supports hydration and internal cleansing.
+A traditional wellness drink known for its powerful detox properties. This refreshing blend helps cleanse the system while keeping the body cool and hydrated.
 
-A perfect balance of freshness and wellness to energize your day.`,
+Perfect to start your day with lightness and clarity.`,
     ingredients:
       "Ash Gourd, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -40,22 +78,18 @@ A perfect balance of freshness and wellness to energize your day.`,
     image_url: "/images/ash-gourd-juice-1.jpg",
     image_url_2: "/images/ash-gourd-juice-2.jpg",
     image_url_3: "/images/ash-gourd-juice-3.jpg",
-    variations: [
-      { id: "p1-300ml", label: "300ml", price: 79, stock: 80 },
-      { id: "p1-500ml", label: "500ml", price: 119, stock: 50 },
-      { id: "p1-1l", label: "1 Litre", price: 199, stock: 30 },
-    ],
+    variations: createVariations("p1"),
   },
 
   {
     id: "p2",
     name: "Beetroot Juice",
     category: "Beetroot",
-    description: `Beetroot Vitality Juice — Rich. Energizing. Naturally Nourishing.
+    description: `Beetroot Vitality Juice — Rich. Energizing. Iron Boosting.
 
-A vibrant blend of fresh beetroot and tomato crafted to support stamina and vitality.
+Packed with natural nitrates and nutrients, this juice supports stamina, blood flow, and daily energy levels.
 
-Perfect for boosting daily energy.`,
+A perfect drink to power through your day.`,
     ingredients:
       "Beetroot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -64,17 +98,18 @@ Perfect for boosting daily energy.`,
     image_url: "/images/beetroot-juice-1.jpg",
     image_url_2: "/images/beetroot-juice-2.jpg",
     image_url_3: "/images/beetroot-juice-3.jpg",
+    variations: createVariations("p2"),
   },
 
   {
     id: "p3",
     name: "Carrot Juice",
     category: "Carrot",
-    description: `Carrot Fresh Juice — Sweet. Nourishing. Naturally Energizing.
+    description: `Carrot Glow Juice — Sweet. Nourishing. Skin Friendly.
 
-Made with fresh carrots and herbs, this juice delivers a refreshing and nutrient-rich experience.
+Rich in beta-carotene and antioxidants, this juice supports skin health, vision, and immunity.
 
-Keeps you active and refreshed.`,
+A naturally sweet and refreshing daily drink.`,
     ingredients:
       "Carrot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -83,17 +118,18 @@ Keeps you active and refreshed.`,
     image_url: "/images/carrot-juice-1.jpg",
     image_url_2: "/images/carrot-juice-2.jpg",
     image_url_3: "/images/carrot-juice-3.jpg",
+    variations: createVariations("p3"),
   },
 
   {
     id: "p4",
     name: "Cucumber Juice",
     category: "Cucumber",
-    description: `Cucumber Hydration Juice — Cool. Refreshing. Naturally Revitalizing.
+    description: `Cucumber Hydration Juice — Light. Cooling. Deeply Refreshing.
 
-A light and cooling juice designed to hydrate and refresh your body.
+A perfect hydration drink that cools the body and replenishes fluids, especially in hot weather.
 
-Perfect for daily detox.`,
+Keeps you fresh, light, and energized.`,
     ingredients:
       "Cucumber, Bottle Gourd, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -102,17 +138,18 @@ Perfect for daily detox.`,
     image_url: "/images/cucumber-juice-1.jpg",
     image_url_2: "/images/cucumber-juice-2.jpg",
     image_url_3: "/images/cucumber-juice-3.jpg",
+    variations: createVariations("p4"),
   },
 
   {
     id: "p5",
     name: "Tomato Juice",
     category: "Tomato",
-    description: `Tomato Fresh Juice — Tangy. Refreshing. Naturally Nourishing.
+    description: `Tomato Refresh Juice — Tangy. Savory. Heart Friendly.
 
-A flavorful blend that delivers both taste and nutrition.
+Loaded with antioxidants like lycopene, this juice supports heart health and overall wellness.
 
-Refreshing and satisfying.`,
+A bold and refreshing savory drink.`,
     ingredients:
       "Tomato, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -121,17 +158,18 @@ Refreshing and satisfying.`,
     image_url: "/images/tomato-juice-1.jpg",
     image_url_2: "/images/tomato-juice-2.jpg",
     image_url_3: "/images/tomato-juice-3.jpg",
+    variations: createVariations("p5"),
   },
 
   {
     id: "p6",
     name: "Mixed Veg Juice",
     category: "Mixed Veg",
-    description: `Mixed Veg Power Juice — Balanced. Refreshing. Nutrient Rich.
+    description: `Mixed Veg Power Juice — Balanced. Complete. Nutrient Rich.
 
-A wholesome combination of vegetables designed for complete nutrition.
+A powerful blend of multiple vegetables providing a wide range of vitamins and minerals.
 
-Perfect daily health drink.`,
+Your all-in-one daily health drink.`,
     ingredients:
       "Carrot, Beetroot, Cucumber, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
     price: 79,
@@ -140,15 +178,16 @@ Perfect daily health drink.`,
     image_url: "/images/mix-veg-juice-1.jpg",
     image_url_2: "/images/mix-veg-juice-2.jpg",
     image_url_3: "/images/mix-veg-juice-3.jpg",
+    variations: createVariations("p6"),
   },
 
   {
     id: "p7",
     name: "Wheatgrass Juice",
     category: "Wheatgrass",
-    description: `Wheatgrass Wellness Shot — Powerful. Natural. Revitalizing.
+    description: `Wheatgrass Wellness Shot — Powerful. Detoxifying. Immunity Boosting.
 
-A concentrated green drink packed with nutrients to support detox and immunity.
+A concentrated green superfood rich in chlorophyll that supports detox and boosts immunity.
 
 Best consumed fresh for maximum benefits.`,
     ingredients:
@@ -159,5 +198,6 @@ Best consumed fresh for maximum benefits.`,
     image_url: "/images/wheatgrass-juice-1.jpg",
     image_url_2: "/images/wheatgrass-juice-2.jpg",
     image_url_3: "/images/wheatgrass-juice-3.jpg",
+    variations: createVariations("p7"),
   },
 ];
