@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Lock } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
 import SiteLogo from "@/components/SiteLogo";
 import { toast } from "sonner";
 
@@ -12,6 +12,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -46,7 +47,12 @@ const AdminLogin = () => {
         <h2 className="mt-4 text-center font-display text-xl font-bold text-foreground">Admin Login</h2>
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <Input placeholder="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input placeholder="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <div className="relative">
+            <Input placeholder="Password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           <Button type="submit" disabled={loading} className="w-full bg-nature-gradient text-primary-foreground">
             <Lock className="mr-2 h-4 w-4" />
             {loading ? "Signing in..." : "Sign In"}

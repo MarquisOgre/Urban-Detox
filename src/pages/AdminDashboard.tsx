@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package, ShoppingCart, Clock, DollarSign,
-  Plus, Trash2, Edit2, Eye, Mail, Download, Upload,
+  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { uploadImage } from "@/hooks/useImageUpload";
+import DetoxJuices from "@/components/DetoxJuices";
 
 const CATEGORIES = ["Wheatgrass", "Ash Gourd", "Carrot", "Beetroot", "Tomato", "Mix Veg"];
 
@@ -289,6 +290,9 @@ const AdminDashboard = () => {
             <TabsTrigger value="messages" className="flex items-center gap-1.5 data-[state=active]:bg-card">
               <Mail className="h-4 w-4" /> Messages
             </TabsTrigger>
+            <TabsTrigger value="detox" className="flex items-center gap-1.5 data-[state=active]:bg-card">
+              <GlassWater className="h-4 w-4" /> Detox Juice
+            </TabsTrigger>
           </TabsList>
 
           {/* PRODUCTS TAB */}
@@ -464,6 +468,11 @@ const AdminDashboard = () => {
                 </TableBody>
               </Table>
             </Card>
+          </TabsContent>
+
+          {/* DETOX JUICE TAB */}
+          <TabsContent value="detox">
+            <DetoxJuices onBackToDashboard={() => {}} />
           </TabsContent>
         </Tabs>
       </main>
