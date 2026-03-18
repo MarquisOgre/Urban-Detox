@@ -1,6 +1,13 @@
 // Hardcoded product data - no database dependency
 import { getProductImage } from "@/lib/productImages";
 
+export type ProductVariation = {
+  id: string;
+  label: string;
+  price: number;
+  stock: number;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -12,6 +19,7 @@ export type Product = {
   image_url: string | null;
   image_url_2?: string | null;
   image_url_3?: string | null;
+  variations?: ProductVariation[];
 };
 
 export const hardcodedProducts: Product[] = [
@@ -32,8 +40,12 @@ Key Ingredients: Ash Gourd, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lem
   image_url: "/images/ash-gourd-juice-1.jpg",
   image_url_2: "/images/ash-gourd-juice-2.jpg",
   image_url_3: "/images/ash-gourd-juice-3.jpg",
+  variations: [
+    { id: "p1-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p1-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p1-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p2",
   name: "Beetroot Juice",
@@ -49,8 +61,12 @@ Key Ingredients: Beetroot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon 
   image_url: "/images/beetroot-juice-1.jpg",
   image_url_2: "/images/beetroot-juice-2.jpg",
   image_url_3: "/images/beetroot-juice-3.jpg",
+  variations: [
+    { id: "p2-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p2-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p2-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p3",
   name: "Carrot Juice",
@@ -66,8 +82,12 @@ Key Ingredients: Carrot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Ju
   image_url: "/images/carrot-juice-1.jpg",
   image_url_2: "/images/carrot-juice-2.jpg",
   image_url_3: "/images/carrot-juice-3.jpg",
+  variations: [
+    { id: "p3-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p3-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p3-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p4",
   name: "Cucumber Juice",
@@ -83,8 +103,12 @@ Key Ingredients: Cucumber, Bottle Gourd, Coriander Leaves, Mint Leaves, Ginger, 
   image_url: "/images/cucumber-juice-1.jpg",
   image_url_2: "/images/cucumber-juice-2.jpg",
   image_url_3: "/images/cucumber-juice-3.jpg",
+  variations: [
+    { id: "p4-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p4-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p4-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p5",
   name: "Tomato Juice",
@@ -100,8 +124,12 @@ Key Ingredients: Tomato, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lemon 
   image_url: "/images/tomato-juice-1.jpg",
   image_url_2: "/images/tomato-juice-2.jpg",
   image_url_3: "/images/tomato-juice-3.jpg",
+  variations: [
+    { id: "p5-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p5-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p5-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p6",
   name: "Mixed Veg Juice",
@@ -117,8 +145,12 @@ Key Ingredients: Carrot, Beetroot, Cucumber, Tomato, Coriander Leaves, Mint Leav
   image_url: "/images/mix-veg-juice-1.jpg",
   image_url_2: "/images/mix-veg-juice-2.jpg",
   image_url_3: "/images/mix-veg-juice-3.jpg",
+  variations: [
+    { id: "p6-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p6-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p6-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
-
 {
   id: "p7",
   name: "Wheatgrass Juice",
@@ -134,5 +166,10 @@ Key Ingredients: Wheatgrass, Cucumber, Lemon Juice, Black Salt.`,
   image_url: "/images/wheatgrass-juice-1.jpg",
   image_url_2: "/images/wheatgrass-juice-2.jpg",
   image_url_3: "/images/wheatgrass-juice-3.jpg",
+  variations: [
+    { id: "p7-300ml", label: "300ml", price: 79, stock: 80 },
+    { id: "p7-500ml", label: "500ml", price: 119, stock: 50 },
+    { id: "p7-1l", label: "1 Litre", price: 199, stock: 30 },
+  ],
 },
 ];
