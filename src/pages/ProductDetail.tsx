@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -8,7 +9,8 @@ import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugify";
 import { getProductImage } from "@/lib/productImages";
-import { hardcodedProducts } from "@/lib/productData";
+import { hardcodedProducts, ProductVariation } from "@/lib/productData";
+import { cn } from "@/lib/utils";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -17,10 +19,28 @@ const ProductDetail = () => {
 
   const product = hardcodedProducts.find((p) => slugify(p.name) === slug) || null;
 
+  const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(
+    product?.variations?.[0] || null
+  );
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  const images = product
+    ? [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean) as string[]
+    : [];
+
+  const activePrice = selectedVariation?.price ?? product?.price ?? 0;
+  const activeStock = selectedVariation?.stock ?? product?.stock ?? 0;
+
   const handleAddToCart = () => {
     if (!product) return;
-    addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url });
-    toast.success(`${product.name} added to cart!`);
+    const label = selectedVariation ? ` (${selectedVariation.label})` : "";
+    addItem({
+      id: selectedVariation?.id || product.id,
+      name: `${product.name}${label}`,
+      price: activePrice,
+      image_url: product.image_url,
+    });
+    toast.success(`${product.name}${label} added to cart!`);
   };
 
   return (
@@ -41,24 +61,74 @@ const ProductDetail = () => {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2">
-            <div className="overflow-hidden rounded-xl border border-border bg-secondary/50">
-              <img
-                src={getProductImage(product.name, product.image_url)}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
+            {/* Images */}
+            <div className="space-y-3">
+              <div className="overflow-hidden rounded-xl border border-border bg-secondary/50">
+                <img
+                  src={getProductImage(product.name, images[selectedImage] || product.image_url)}
+                  alt={product.name}
+                  className="h-full w-full object-cover aspect-square"
+                />
+              </div>
+              {images.length > 1 && (
+                <div className="flex gap-2">
+                  {images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      className={cn(
+                        "h-16 w-16 overflow-hidden rounded-lg border-2 transition-all",
+                        selectedImage === i ? "border-primary ring-2 ring-primary/30" : "border-border opacity-70 hover:opacity-100"
+                      )}
+                    >
+                      <img
+                        src={getProductImage(product.name, img)}
+                        alt={`${product.name} ${i + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Details */}
             <div>
               <span className="text-sm font-medium text-primary">{product.category}</span>
               <h1 className="mt-2 font-display text-3xl font-bold text-foreground md:text-4xl">{product.name}</h1>
               <div className="mt-4 text-muted-foreground whitespace-pre-line">{product.description}</div>
-              <p className="mt-6 font-display text-3xl font-bold text-foreground">₹{product.price}</p>
+
+              {/* Variations */}
+              {product.variations && product.variations.length > 0 && (
+                <div className="mt-6">
+                  <p className="text-sm font-medium text-foreground mb-2">Select Size</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.variations.map((v) => (
+                      <button
+                        key={v.id}
+                        onClick={() => setSelectedVariation(v)}
+                        className={cn(
+                          "rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all",
+                          selectedVariation?.id === v.id
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/50"
+                        )}
+                      >
+                        <span className="block">{v.label}</span>
+                        <span className="block text-xs font-bold">₹{v.price}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="mt-6 font-display text-3xl font-bold text-foreground">₹{activePrice}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                {activeStock > 0 ? `${activeStock} in stock` : "Out of stock"}
               </p>
               <Button
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0}
+                disabled={activeStock <= 0}
                 className="mt-6 bg-nature-gradient text-primary-foreground hover:opacity-90"
                 size="lg"
               >

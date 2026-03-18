@@ -93,7 +93,11 @@ const Products = () => {
                   <h3 className="mt-1 font-display text-sm font-semibold text-foreground">{product.name}</h3>
                   <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{product.description}</p>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="font-display text-lg font-bold text-foreground">₹{product.price}</span>
+                    <span className="font-display text-lg font-bold text-foreground">
+                      {product.variations && product.variations.length > 0
+                        ? `From ₹${Math.min(...product.variations.map(v => v.price))}`
+                        : `₹${product.price}`}
+                    </span>
                     <Button
                       size="sm"
                       onClick={(e) => handleAddToCart(e, product)}
