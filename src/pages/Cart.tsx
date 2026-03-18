@@ -78,7 +78,7 @@ const Cart = () => {
 
   if (orderId) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-14">
         <PromoBanner />
         <Navbar />
         <main className="container mx-auto flex flex-col items-center justify-center px-4 py-20 text-center">
@@ -105,7 +105,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-14">
         <PromoBanner />
         <Navbar />
         <main className="container mx-auto px-4 py-8">
@@ -126,7 +126,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-14">
       <PromoBanner />
       <Navbar />
       <main className="container mx-auto px-4 py-8">

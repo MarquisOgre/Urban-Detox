@@ -39,7 +39,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-14">
       <Card className="w-full max-w-sm p-8">
         <div className="flex items-center justify-center gap-2">
           <SiteLogo imageClassName="h-12 w-auto" iconClassName="h-12 w-auto" textClassName="font-display text-xl font-bold text-primary" />
