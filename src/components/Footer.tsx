@@ -10,7 +10,7 @@ const Footer = () => {
   const footerCredit = general?.footer_credit || "Dexorzo Creations";
 
   return (
-    <footer className="border-t border-border bg-card py-2">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card py-2">
       <div className="container mx-auto flex items-center justify-center gap-4 px-4 text-center">
         <Link to="/" className="flex items-center gap-2">
           <SiteLogo imageClassName="h-10 w-auto" iconClassName="h-5 w-5" textClassName="font-display text-sm font-bold text-primary" />

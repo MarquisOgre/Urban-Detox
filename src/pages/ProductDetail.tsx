@@ -44,13 +44,13 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen bg-background pb-14">
       <PromoBanner />
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={() => navigate("/products")} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Products
-        </Button>
+      <main className="container mx-auto px-4 pt-4 pb-14">
+        <button onClick={() => navigate("/products")} className="mb-2 inline-flex items-center justify-center rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
 
         {!product ? (
           <div className="py-20 text-center">
