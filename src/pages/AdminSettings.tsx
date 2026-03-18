@@ -568,7 +568,7 @@ const tabComponents: Record<string, React.FC> = {
 
 const AdminSettings = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-14">
       <AdminHeader />
       <main className="container mx-auto px-4 py-8 pb-16">
         <Tabs defaultValue="general">

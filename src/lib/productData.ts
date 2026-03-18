@@ -24,40 +24,39 @@ export type Product = {
   variations?: ProductVariation[];
 };
 
-const detoxPlans = [
+const sizeOptions = [
   {
-    key: "reset",
-    label: "Urban Reset",
-    subLabel: "1 Day Detox",
+    key: "300ml",
+    label: "300ml",
+    subLabel: "Single Serve",
     price: 79,
+    stock: 100,
+  },
+  {
+    key: "500ml",
+    label: "500ml",
+    subLabel: "Regular",
+    price: 129,
     stock: 80,
   },
   {
-    key: "cleanse",
-    label: "Urban Cleanse",
-    subLabel: "7 Day Detox",
-    price: 499,
+    key: "1l",
+    label: "1 Litre",
+    subLabel: "Family Pack",
+    price: 229,
     stock: 50,
-    badge: "Most Popular",
-  },
-  {
-    key: "transform",
-    label: "Urban Transformation",
-    subLabel: "28 Day Detox",
-    price: 1999,
-    stock: 30,
     badge: "Best Value",
   },
 ];
 
 const createVariations = (productId: string): ProductVariation[] =>
-  detoxPlans.map((plan) => ({
-    id: `${productId}-${plan.key}`,
-    label: plan.label,
-    subLabel: plan.subLabel,
-    price: plan.price,
-    stock: plan.stock,
-    badge: plan.badge,
+  sizeOptions.map((size) => ({
+    id: `${productId}-${size.key}`,
+    label: size.label,
+    subLabel: size.subLabel,
+    price: size.price,
+    stock: size.stock,
+    badge: size.badge,
   }));
 
 export const hardcodedProducts: Product[] = [

@@ -15,7 +15,7 @@ const values = [
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-14">
       <PromoBanner />
       <Navbar />
       <main>

@@ -6,13 +6,13 @@ import PromoBanner from "@/components/PromoBanner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart, Filter } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugify";
 import { getProductImage } from "@/lib/productImages";
 import { hardcodedProducts } from "@/lib/productData";
 
-const categories = ["All", "Wheatgrass", "Ash Gourd", "Carrot", "Beetroot", "Tomato", "Mix Veg"];
+const categories = ["All", "Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mixed Veg", "Tomato", "Wheatgrass"];
 
 const Products = () => {
   const [searchParams] = useSearchParams();
@@ -44,37 +44,47 @@ const Products = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen bg-background pb-14">
       <PromoBanner />
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-        <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-          Our <span className="text-gradient-nature">Juices</span>
-        </h1>
-        <p className="mt-2 text-muted-foreground">Fresh, cold-pressed juices delivered to your doorstep</p>
+        {/* 3-column header: Title | Categories | Sort */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          {/* Left: Title */}
+          <div className="shrink-0">
+            <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              Our <span className="text-gradient-nature">Juices</span>
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Fresh, cold-pressed & delivered</p>
+          </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Filter className="h-5 w-5 text-muted-foreground" />
-          {categories.map((cat) => (
-            <Button
-              key={cat}
-              variant={selectedCategory === cat ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(cat)}
-              className={selectedCategory === cat ? "bg-nature-gradient text-primary-foreground" : ""}
+          {/* Center: Category filters */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat)}
+                className={selectedCategory === cat ? "bg-nature-gradient text-primary-foreground" : ""}
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+
+          {/* Right: Sort */}
+          <div className="shrink-0">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground"
             >
-              {cat}
-            </Button>
-          ))}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="ml-auto rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-          </select>
+              <option value="name">Sort by Name</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+            </select>
+          </div>
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
