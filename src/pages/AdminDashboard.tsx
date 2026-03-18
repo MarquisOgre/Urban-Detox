@@ -469,6 +469,11 @@ const AdminDashboard = () => {
               </Table>
             </Card>
           </TabsContent>
+
+          {/* DETOX JUICE TAB */}
+          <TabsContent value="detox">
+            <DetoxJuices onBackToDashboard={() => {}} />
+          </TabsContent>
         </Tabs>
       </main>
       <Footer />
