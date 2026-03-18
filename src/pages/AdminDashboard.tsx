@@ -290,6 +290,9 @@ const AdminDashboard = () => {
             <TabsTrigger value="messages" className="flex items-center gap-1.5 data-[state=active]:bg-card">
               <Mail className="h-4 w-4" /> Messages
             </TabsTrigger>
+            <TabsTrigger value="detox" className="flex items-center gap-1.5 data-[state=active]:bg-card">
+              <GlassWater className="h-4 w-4" /> Detox Juice
+            </TabsTrigger>
           </TabsList>
 
           {/* PRODUCTS TAB */}
