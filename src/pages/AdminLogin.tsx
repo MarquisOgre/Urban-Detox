@@ -42,7 +42,7 @@ const AdminLogin = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-sm p-8">
         <div className="flex items-center justify-center gap-2">
-          <SiteLogo imageClassName="h-8 w-8" iconClassName="h-8 w-8" textClassName="font-display text-xl font-bold text-primary" />
+          <SiteLogo imageClassName="h-12 w-auto" iconClassName="h-12 w-auto" textClassName="font-display text-xl font-bold text-primary" />
         </div>
         <h2 className="mt-4 text-center font-display text-xl font-bold text-foreground">Admin Login</h2>
         <form onSubmit={handleLogin} className="mt-6 space-y-4">

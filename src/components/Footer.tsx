@@ -6,7 +6,7 @@ import { useGeneralSettings } from "@/hooks/useGeneralSettings";
 const Footer = () => {
   const { data: general } = useGeneralSettings();
 
-  const footerText = general?.footer_text || "© 2026 Nature's Blend. All rights reserved.";
+  const footerText = general?.footer_text || "© 2026 Urban Detox. All rights reserved.";
   const footerCredit = general?.footer_credit || "Dexorzo Creations";
 
   return (

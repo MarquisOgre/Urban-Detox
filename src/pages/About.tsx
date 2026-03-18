@@ -27,7 +27,7 @@ const About = () => {
               animate={{ opacity: 1, y: 0 }}
               className="font-display text-4xl font-bold text-foreground md:text-5xl"
             >
-              About <span className="text-gradient-nature">Nature's Blend</span>
+              About <span className="text-gradient-nature">Urban Detox</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -48,7 +48,7 @@ const About = () => {
                 Our <span className="text-gradient-nature">Story</span>
               </h2>
               <p className="mt-6 leading-relaxed text-muted-foreground">
-                Nature's Blend was born out of a simple idea — that the best nutrition comes straight from the earth. We started as a small local juice stand in Tirupati, serving fresh wheatgrass shots to health-conscious neighbours. Today, we offer a full range of cold-pressed juices, each crafted to deliver specific health benefits. Our commitment to freshness, purity, and taste remains unchanged.
+                Urban Detox was born out of a simple idea — that the best nutrition comes straight from the earth. We started as a small local juice stand in Tirupati, serving fresh wheatgrass shots to health-conscious neighbours. Today, we offer a full range of cold-pressed juices, each crafted to deliver specific health benefits. Our commitment to freshness, purity, and taste remains unchanged.
               </p>
             </div>
           </div>

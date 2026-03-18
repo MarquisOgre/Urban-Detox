@@ -1,11 +1,11 @@
-# 🌸 Nature's Blend
+# 🌸 Urban Detox
 
 ## Project Info
 
-**Project Name:** Nature's Blend - Fresh Cold-Pressed Juices
-**Live URL:** https://naturesblend.vercel.app
+**Project Name:** Urban Detox - Fresh Cold-Pressed Juices
+**Live URL:** https://urbandetox.vercel.app/
 
-Nature's Blend is a modern e-commerce website built for selling
+Urban Detox is a modern e-commerce website built for selling
 WhiteGrass products & Healthy Vegetable Detox Juices. 
 
 ------------------------------------------------------------------------
@@ -22,9 +22,9 @@ WhiteGrass products & Healthy Vegetable Detox Juices.
 
 #### Steps:
 
-1.  Clone the repository: git clone `https://github.com/MarquisOgre/NaturesBlend`{=html}
+1.  Clone the repository: git clone `https://github.com/MarquisOgre/Urban-Detox`{=html}
 
-2.  Navigate to the project directory: cd NaturesBlend
+2.  Navigate to the project directory: cd Urban-Detox
 
 3.  Install dependencies: npm install
 

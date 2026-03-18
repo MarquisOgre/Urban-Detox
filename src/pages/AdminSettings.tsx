@@ -165,10 +165,10 @@ const GeneralTab = () => {
     <div className="grid gap-6 lg:grid-cols-2">
       <Section icon={Globe} title="General">
         <Field label="Logo Text">
-          <Input value={form.logo_text} onChange={(e) => u("logo_text", e.target.value)} placeholder="Nature's" />
+          <Input value={form.logo_text} onChange={(e) => u("logo_text", e.target.value)} placeholder="Urban" />
         </Field>
         <Field label="Logo Highlight" hint="The highlighted part after logo text">
-          <Input value={form.logo_highlight} onChange={(e) => u("logo_highlight", e.target.value)} placeholder="Blend" />
+          <Input value={form.logo_highlight} onChange={(e) => u("logo_highlight", e.target.value)} placeholder="Detox" />
         </Field>
         <Field label="Tagline">
           <Input value={form.tagline} onChange={(e) => u("tagline", e.target.value)} placeholder="Fresh Cold-Pressed Juices" />

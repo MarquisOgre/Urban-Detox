@@ -42,7 +42,7 @@ const SiteLogo = ({
     ? general?.dark_logo_url || general?.light_logo_url
     : general?.light_logo_url || general?.dark_logo_url;
 
-  const siteName = general?.site_name || "Nature's Blend";
+  const siteName = general?.site_name || "Urban Detox";
   const logoText = general?.logo_text || general?.site_name || "Nature's";
   const logoHighlight = general?.logo_highlight || "Blend";
 
