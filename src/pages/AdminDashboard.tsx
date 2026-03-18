@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { uploadImage } from "@/hooks/useImageUpload";
+import DetoxJuices from "@/components/DetoxJuices";
 
 const CATEGORIES = ["Wheatgrass", "Ash Gourd", "Carrot", "Beetroot", "Tomato", "Mix Veg"];
 
