@@ -18,26 +18,35 @@ const ProductDetail = () => {
   const { data: products = [], isLoading, error } = useCatalogProducts();
   const product = useMemo(() => products.find((item) => item.slug === slug) ?? null, [products, slug]);
   const [selectedPlanKey, setSelectedPlanKey] = useState<string | null>(null);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
 
   useEffect(() => {
     setSelectedPlanKey(product?.plans[0]?.key ?? null);
+    setSelectedImageIdx(0);
   }, [product?.id]);
+
+  const allImages = useMemo(() => {
+    if (!product) return [];
+    const imgs: string[] = [];
+    if (product.image_url) imgs.push(product.image_url);
+    product.images.forEach((img) => {
+      if (!imgs.includes(img)) imgs.push(img);
+    });
+    return imgs.length > 0 ? imgs : ["/placeholder.svg"];
+  }, [product]);
 
   const selectedPlan = product?.plans.find((plan) => plan.key === selectedPlanKey) ?? product?.plans[0] ?? null;
   const activePrice = selectedPlan?.price ?? product?.price ?? 0;
 
   const handleAddToCart = () => {
     if (!product) return;
-
     const labelSuffix = selectedPlan ? ` (${selectedPlan.label})` : "";
-
     addItem({
       id: getCartProductId(product.id, selectedPlan?.key),
       name: `${product.name}${labelSuffix}`,
       price: activePrice,
       image_url: product.image_url,
     });
-
     toast.success(`${product.name}${labelSuffix} added to cart!`);
   };
 
@@ -69,13 +78,42 @@ const ProductDetail = () => {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 md:items-start">
-            {/* Full-size product image */}
-            <div className="overflow-hidden rounded-xl border border-border bg-secondary/50">
-              <img
-                src={product.image_url || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full object-cover"
-              />
+            {/* Image gallery: thumbnails on left, main image on right */}
+            <div className="flex gap-3">
+              {/* Thumbnails column */}
+              {allImages.length > 1 && (
+                <div className="flex flex-col gap-2 shrink-0">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImageIdx(idx)}
+                      className={cn(
+                        "h-16 w-16 overflow-hidden rounded-lg border-2 transition-all",
+                        selectedImageIdx === idx
+                          ? "border-primary ring-2 ring-primary/30"
+                          : "border-border hover:border-primary/50"
+                      )}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Main image - 768x768 aspect */}
+              <div className="flex-1 overflow-hidden rounded-xl border border-border bg-secondary/50">
+                <div className="aspect-square w-full max-w-[768px] mx-auto">
+                  <img
+                    src={allImages[selectedImageIdx] || "/placeholder.svg"}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
