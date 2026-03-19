@@ -190,7 +190,6 @@ const AdminDashboard = () => {
         name: row.name,
         category: row.category,
         price: Number(row.price),
-        stock: Number(row.stock) || 0,
         description: row.description || null,
         is_active: row.is_active === "false" ? false : true,
         image_url: row.image_url || null,
