@@ -42,7 +42,7 @@ type CatalogProductRow = {
 export const DEFAULT_PLAN_OPTIONS: CatalogPlan[] = [
   { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: 79 },
   { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: 499 },
-  { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: 1799, badge: "Best Value" },
+  { key: "transform", label: "Urban Transform", subLabel: "30 Day Detox", price: 1999, badge: "Best Value" },
 ];
 
 const normalizePlanOptions = (value: Json | undefined): CatalogPlan[] => {
