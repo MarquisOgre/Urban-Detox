@@ -117,12 +117,14 @@ const AdminDashboard = () => {
     const existingPlans = Array.isArray(p.plan_options) && p.plan_options.length > 0
       ? p.plan_options.map((pl: any) => ({ key: pl.key || "", label: pl.label || "", subLabel: pl.subLabel || "", price: String(pl.price ?? ""), badge: pl.badge || "" }))
       : defaultPlans;
+    const existingImages = Array.isArray(p.images) ? p.images.filter((i: any) => typeof i === "string") : [];
     setProductForm({
       name: p.name, category: p.category, price: String(p.price),
       description: p.description || "", ingredients: p.ingredients || "", health_benefits: (p as any).health_benefits || "",
-      slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", plans: existingPlans,
+      slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", images: existingImages, plans: existingPlans,
     });
     setProductImage(null);
+    setAdditionalImages([]);
     setProductDialog(true);
   };
 
