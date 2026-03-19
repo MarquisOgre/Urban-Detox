@@ -28,7 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { uploadImage } from "@/hooks/useImageUpload";
 import DetoxJuices from "@/components/DetoxJuices";
 
-const CATEGORIES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mixed Veg", "Tomato", "Wheatgrass"];
+const CATEGORIES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Custom", "Mixed Veg", "Tomato", "Wheatgrass"];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -88,6 +88,7 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
     name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "",
+    images: [] as string[],
     plans: [
       { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
       { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: "499", badge: "" },
@@ -95,6 +96,7 @@ const AdminDashboard = () => {
     ] as { key: string; label: string; subLabel: string; price: string; badge: string }[],
   });
   const [productImage, setProductImage] = useState<File | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
 
   const defaultPlans = [
     { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
@@ -104,8 +106,9 @@ const AdminDashboard = () => {
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "", plans: defaultPlans });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "", images: [], plans: defaultPlans });
     setProductImage(null);
+    setAdditionalImages([]);
     setProductDialog(true);
   };
 
@@ -114,12 +117,14 @@ const AdminDashboard = () => {
     const existingPlans = Array.isArray(p.plan_options) && p.plan_options.length > 0
       ? p.plan_options.map((pl: any) => ({ key: pl.key || "", label: pl.label || "", subLabel: pl.subLabel || "", price: String(pl.price ?? ""), badge: pl.badge || "" }))
       : defaultPlans;
+    const existingImages = Array.isArray(p.images) ? p.images.filter((i: any) => typeof i === "string") : [];
     setProductForm({
       name: p.name, category: p.category, price: String(p.price),
       description: p.description || "", ingredients: p.ingredients || "", health_benefits: (p as any).health_benefits || "",
-      slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", plans: existingPlans,
+      slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", images: existingImages, plans: existingPlans,
     });
     setProductImage(null);
+    setAdditionalImages([]);
     setProductDialog(true);
   };
 
@@ -129,6 +134,14 @@ const AdminDashboard = () => {
       const url = await uploadImage(productImage, "products");
       if (url) imageUrl = url;
     }
+
+    // Upload additional images
+    const uploadedAdditional: string[] = [];
+    for (const file of additionalImages) {
+      const url = await uploadImage(file, "products");
+      if (url) uploadedAdditional.push(url);
+    }
+    const allImages = [...productForm.images, ...uploadedAdditional];
 
     const planOptions = productForm.plans.map((pl) => ({
       key: pl.key, label: pl.label, subLabel: pl.subLabel,
@@ -145,6 +158,7 @@ const AdminDashboard = () => {
       slug: productForm.slug || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
+      images: allImages,
       plan_options: planOptions,
     };
 
@@ -627,11 +641,38 @@ const AdminDashboard = () => {
               <Textarea placeholder="e.g. Boosts immunity, aids digestion, detoxifies liver" value={productForm.health_benefits} onChange={(e) => setProductForm({ ...productForm, health_benefits: e.target.value })} className="mt-1" rows={2} />
             </div>
             <div>
-              <Label>Product Image</Label>
+              <Label>Main Product Image</Label>
               {productForm.image_url && (
                 <img src={productForm.image_url} alt="" className="mt-1 h-20 w-20 rounded object-cover" />
               )}
               <Input type="file" accept="image/*" onChange={(e) => setProductImage(e.target.files?.[0] || null)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Additional Images</Label>
+              {productForm.images.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {productForm.images.map((img, idx) => (
+                    <div key={idx} className="relative group">
+                      <img src={img} alt="" className="h-16 w-16 rounded object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({ ...productForm, images: productForm.images.filter((_, i) => i !== idx) })}
+                        className="absolute -right-1 -top-1 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setAdditionalImages(Array.from(e.target.files || []))}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Select multiple images to upload as gallery photos.</p>
             </div>
 
             {/* Plan Options */}
