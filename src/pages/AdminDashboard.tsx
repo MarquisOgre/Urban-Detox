@@ -101,7 +101,7 @@ const AdminDashboard = () => {
   const openEditProduct = (p: any) => {
     setEditingProduct(p);
     setProductForm({
-      name: p.name, category: p.category, price: String(p.price), stock: String(p.stock),
+      name: p.name, category: p.category, price: String(p.price),
       description: p.description || "", is_active: p.is_active, image_url: p.image_url || "",
     });
     setProductImage(null);
