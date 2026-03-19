@@ -126,6 +126,7 @@ export type Database = {
           health_benefits: string | null
           id: string
           image_url: string | null
+          images: Json
           ingredients: string | null
           is_active: boolean
           name: string
@@ -141,6 +142,7 @@ export type Database = {
           health_benefits?: string | null
           id?: string
           image_url?: string | null
+          images?: Json
           ingredients?: string | null
           is_active?: boolean
           name: string
@@ -156,6 +158,7 @@ export type Database = {
           health_benefits?: string | null
           id?: string
           image_url?: string | null
+          images?: Json
           ingredients?: string | null
           is_active?: boolean
           name?: string
