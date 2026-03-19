@@ -1,11 +1,8 @@
-// src/lib/productData.ts
-
 export type ProductVariation = {
   id: string;
   label: string;
   subLabel: string;
   price: number;
-  stock: number;
   badge?: string;
 };
 
@@ -16,7 +13,7 @@ export type Product = {
   description: string;
   ingredients: string;
   price: number;
-  stock: number;
+  maxPrice: number;
   is_active: boolean;
   image_url: string | null;
   image_url_2?: string | null;
@@ -24,40 +21,39 @@ export type Product = {
   variations?: ProductVariation[];
 };
 
-const sizeOptions = [
+const planOptions = [
   {
-    key: "300ml",
-    label: "300ml",
-    subLabel: "Single Serve",
+    key: "reset",
+    label: "Urban Reset",
+    subLabel: "1 Day Detox",
     price: 79,
-    stock: 100,
   },
   {
-    key: "500ml",
-    label: "500ml",
-    subLabel: "Regular",
-    price: 129,
-    stock: 80,
+    key: "cleanse",
+    label: "Urban Cleanse",
+    subLabel: "7 Day Detox",
+    price: 499,
   },
   {
-    key: "1l",
-    label: "1 Litre",
-    subLabel: "Family Pack",
-    price: 229,
-    stock: 50,
+    key: "transform",
+    label: "Urban Transform",
+    subLabel: "28 Day Detox",
+    price: 1799,
     badge: "Best Value",
   },
 ];
 
 const createVariations = (productId: string): ProductVariation[] =>
-  sizeOptions.map((size) => ({
-    id: `${productId}-${size.key}`,
-    label: size.label,
-    subLabel: size.subLabel,
-    price: size.price,
-    stock: size.stock,
-    badge: size.badge,
+  planOptions.map((plan) => ({
+    id: `${productId}-${plan.key}`,
+    label: plan.label,
+    subLabel: plan.subLabel,
+    price: plan.price,
+    badge: plan.badge,
   }));
+
+const minPrice = Math.min(...planOptions.map((p) => p.price));
+const maxPrice = Math.max(...planOptions.map((p) => p.price));
 
 export const hardcodedProducts: Product[] = [
   {
@@ -71,15 +67,14 @@ A traditional wellness drink known for its powerful detox properties. This refre
 Perfect to start your day with lightness and clarity.`,
     ingredients:
       "Ash Gourd, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/ash-gourd-juice-1.jpg",
     image_url_2: "/images/ash-gourd-juice-2.jpg",
     image_url_3: "/images/ash-gourd-juice-3.jpg",
     variations: createVariations("p1"),
   },
-
   {
     id: "p2",
     name: "Beetroot Juice",
@@ -91,15 +86,14 @@ Packed with natural nitrates and nutrients, this juice supports stamina, blood f
 A perfect drink to power through your day.`,
     ingredients:
       "Beetroot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/beetroot-juice-1.jpg",
     image_url_2: "/images/beetroot-juice-2.jpg",
     image_url_3: "/images/beetroot-juice-3.jpg",
     variations: createVariations("p2"),
   },
-
   {
     id: "p3",
     name: "Carrot Juice",
@@ -111,15 +105,14 @@ Rich in beta-carotene and antioxidants, this juice supports skin health, vision,
 A naturally sweet and refreshing daily drink.`,
     ingredients:
       "Carrot, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/carrot-juice-1.jpg",
     image_url_2: "/images/carrot-juice-2.jpg",
     image_url_3: "/images/carrot-juice-3.jpg",
     variations: createVariations("p3"),
   },
-
   {
     id: "p4",
     name: "Cucumber Juice",
@@ -131,15 +124,14 @@ A perfect hydration drink that cools the body and replenishes fluids, especially
 Keeps you fresh, light, and energized.`,
     ingredients:
       "Cucumber, Bottle Gourd, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/cucumber-juice-1.jpg",
     image_url_2: "/images/cucumber-juice-2.jpg",
     image_url_3: "/images/cucumber-juice-3.jpg",
     variations: createVariations("p4"),
   },
-
   {
     id: "p5",
     name: "Tomato Juice",
@@ -151,15 +143,14 @@ Loaded with antioxidants like lycopene, this juice supports heart health and ove
 A bold and refreshing savory drink.`,
     ingredients:
       "Tomato, Cucumber, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/tomato-juice-1.jpg",
     image_url_2: "/images/tomato-juice-2.jpg",
     image_url_3: "/images/tomato-juice-3.jpg",
     variations: createVariations("p5"),
   },
-
   {
     id: "p6",
     name: "Mixed Veg Juice",
@@ -171,15 +162,14 @@ A powerful blend of multiple vegetables providing a wide range of vitamins and m
 Your all-in-one daily health drink.`,
     ingredients:
       "Carrot, Beetroot, Cucumber, Tomato, Coriander Leaves, Mint Leaves, Ginger, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/mix-veg-juice-1.jpg",
     image_url_2: "/images/mix-veg-juice-2.jpg",
     image_url_3: "/images/mix-veg-juice-3.jpg",
     variations: createVariations("p6"),
   },
-
   {
     id: "p7",
     name: "Wheatgrass Juice",
@@ -191,8 +181,8 @@ A concentrated green superfood rich in chlorophyll that supports detox and boost
 Best consumed fresh for maximum benefits.`,
     ingredients:
       "Wheatgrass, Cucumber, Lemon Juice, Black Salt",
-    price: 79,
-    stock: 80,
+    price: minPrice,
+    maxPrice,
     is_active: true,
     image_url: "/images/wheatgrass-juice-1.jpg",
     image_url_2: "/images/wheatgrass-juice-2.jpg",
