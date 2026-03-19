@@ -96,18 +96,28 @@ const AdminDashboard = () => {
   });
   const [productImage, setProductImage] = useState<File | null>(null);
 
+  const defaultPlans = [
+    { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
+    { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: "499", badge: "" },
+    { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: "1799", badge: "Best Value" },
+  ];
+
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "" });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", slug: "", is_active: true, image_url: "", plans: defaultPlans });
     setProductImage(null);
     setProductDialog(true);
   };
 
   const openEditProduct = (p: any) => {
     setEditingProduct(p);
+    const existingPlans = Array.isArray(p.plan_options) && p.plan_options.length > 0
+      ? p.plan_options.map((pl: any) => ({ key: pl.key || "", label: pl.label || "", subLabel: pl.subLabel || "", price: String(pl.price ?? ""), badge: pl.badge || "" }))
+      : defaultPlans;
     setProductForm({
       name: p.name, category: p.category, price: String(p.price),
-      description: p.description || "", is_active: p.is_active, image_url: p.image_url || "",
+      description: p.description || "", ingredients: p.ingredients || "", slug: p.slug || "",
+      is_active: p.is_active, image_url: p.image_url || "", plans: existingPlans,
     });
     setProductImage(null);
     setProductDialog(true);
