@@ -1,0 +1,12 @@
+
+CREATE POLICY "Admins can delete orders"
+ON public.orders
+FOR DELETE
+TO public
+USING (has_role(auth.uid(), 'admin'::app_role));
+
+CREATE POLICY "Admins can delete order items"
+ON public.order_items
+FOR DELETE
+TO public
+USING (has_role(auth.uid(), 'admin'::app_role));
