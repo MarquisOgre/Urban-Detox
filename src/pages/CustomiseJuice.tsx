@@ -16,24 +16,21 @@ const MAIN_VEG = [
   { id: "carrot", name: "Carrot", emoji: "🥕" },
   { id: "cucumber", name: "Cucumber", emoji: "🥒" },
   { id: "tomato", name: "Tomato", emoji: "🍅" },
+  { id: "wheatgrass", name: "Wheatgrass Shot", emoji: "🌱" },
 ];
 
 const SUPPORTING_VEG = [
-  { id: "spinach", name: "Spinach", emoji: "🥬" },
-  { id: "celery", name: "Celery", emoji: "🥦" },
-  { id: "ginger", name: "Ginger", emoji: "🫚" },
-  { id: "amla", name: "Amla", emoji: "🫒" },
-  { id: "lemon", name: "Lemon", emoji: "🍋" },
-  { id: "mint", name: "Mint", emoji: "🌿" },
+  { id: "tomato", name: "Tomato", emoji: "🍅" },
+  { id: "cucumber", name: "Cucumber", emoji: "🥒" },
+  { id: "bottle-gourd", name: "Bottle Gourd", emoji: "🥒" },
 ];
 
 const ADD_ONS = [
-  { id: "wheatgrass", name: "Wheatgrass Shot", emoji: "🌱" },
-  { id: "turmeric", name: "Turmeric", emoji: "🟡" },
-  { id: "black-pepper", name: "Black Pepper", emoji: "⚫" },
-  { id: "honey", name: "Honey", emoji: "🍯" },
-  { id: "chia-seeds", name: "Chia Seeds", emoji: "🫘" },
-  { id: "flax-seeds", name: "Flax Seeds", emoji: "🌾" },
+  { id: "coriander", name: "Coriander", emoji: "🌿" },
+  { id: "mint", name: "Mint", emoji: "🌿" },
+  { id: "ginger", name: "Ginger", emoji: "🫚" },
+  { id: "lemon", name: "Lemon", emoji: "🍋" },
+  { id: "black-salt", name: "Black Salt", emoji: "🧂" },
 ];
 
 const PLANS = [
@@ -52,13 +49,13 @@ const CustomiseJuice = () => {
 
   const toggleSupporting = (id: string) => {
     setSupportingVeg((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : prev.length < 3 ? [...prev, id] : prev
+      prev.includes(id) ? prev.filter((v) => v !== id) : prev.length < 1 ? [...prev, id] : prev
     );
   };
 
   const toggleAddOn = (id: string) => {
     setAddOns((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : prev.length < 3 ? [...prev, id] : prev
+      prev.includes(id) ? prev.filter((v) => v !== id) : prev.length < 5 ? [...prev, id] : prev
     );
   };
 
@@ -138,7 +135,7 @@ const CustomiseJuice = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-5 w-5 text-primary" />
                 <h2 className="font-display text-lg font-bold text-foreground">Supporting Vegetables</h2>
-                <span className="text-xs text-muted-foreground">(Pick up to 3)</span>
+                <span className="text-xs text-muted-foreground">(Pick up to 1)</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
                 {SUPPORTING_VEG.map((veg) => (
@@ -164,7 +161,7 @@ const CustomiseJuice = () => {
               <div className="flex items-center gap-2 mb-4">
                 <PlusIcon className="h-5 w-5 text-primary" />
                 <h2 className="font-display text-lg font-bold text-foreground">Add-ons</h2>
-                <span className="text-xs text-muted-foreground">(Pick up to 3)</span>
+                <span className="text-xs text-muted-foreground">(Pick Any)</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
                 {ADD_ONS.map((item) => (

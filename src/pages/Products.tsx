@@ -67,14 +67,19 @@ const Products = () => {
               Our <span className="text-gradient-nature">Juices</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">Fresh, cold-pressed & delivered</p>
-            <Link to="/customise">
+            {/* <Link to="/customise">
+              <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
+                <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
+              </Button>
+            </Link> */}
+          </div>
+          <Link to="/customise">
               <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
                 <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
               </Button>
             </Link>
-          </div>
 
-          <div className="flex flex-wrap justify-center gap-2">
+          {/* <div className="flex flex-wrap justify-center gap-2">
             {categories.map((category) => (
               <Button
                 key={category}
@@ -86,9 +91,9 @@ const Products = () => {
                 {category}
               </Button>
             ))}
-          </div>
+          </div> */}
 
-          <div className="shrink-0">
+          {/* <div className="shrink-0">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -98,7 +103,7 @@ const Products = () => {
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {isLoading ? (
