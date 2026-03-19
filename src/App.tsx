@@ -10,6 +10,7 @@ import FaviconManager from "@/components/FaviconManager";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import CustomiseJuice from "./pages/CustomiseJuice";
 import Cart from "./pages/Cart";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
