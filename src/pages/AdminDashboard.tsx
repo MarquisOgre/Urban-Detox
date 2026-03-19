@@ -87,7 +87,12 @@ const AdminDashboard = () => {
   const [productDialog, setProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
-    name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "",
+    name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", slug: "", is_active: true, image_url: "",
+    plans: [
+      { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
+      { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: "499", badge: "" },
+      { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: "1799", badge: "Best Value" },
+    ] as { key: string; label: string; subLabel: string; price: string; badge: string }[],
   });
   const [productImage, setProductImage] = useState<File | null>(null);
 
