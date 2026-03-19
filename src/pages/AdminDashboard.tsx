@@ -106,8 +106,9 @@ const AdminDashboard = () => {
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "", plans: defaultPlans });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "", images: [], plans: defaultPlans });
     setProductImage(null);
+    setAdditionalImages([]);
     setProductDialog(true);
   };
 
