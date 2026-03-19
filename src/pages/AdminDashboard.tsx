@@ -603,7 +603,6 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
-            </div>
             <div className="flex items-center gap-2">
               <Switch checked={productForm.is_active} onCheckedChange={(v) => setProductForm({ ...productForm, is_active: v })} />
               <Label>Active</Label>
