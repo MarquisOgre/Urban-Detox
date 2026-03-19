@@ -119,7 +119,6 @@ const AdminDashboard = () => {
       name: productForm.name,
       category: productForm.category,
       price: Number(productForm.price),
-      stock: Number(productForm.stock),
       description: productForm.description || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
