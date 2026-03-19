@@ -70,6 +70,11 @@ const normalizePlanOptions = (value: Json | undefined): CatalogPlan[] => {
   return plans.length > 0 ? plans : DEFAULT_PLAN_OPTIONS;
 };
 
+const normalizeImages = (value: Json | undefined): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string" && v.length > 0);
+};
+
 const mapCatalogProduct = (row: CatalogProductRow): CatalogProduct => {
   const plans = normalizePlanOptions(row.plan_options);
   const fallbackPrice = Number(row.price ?? plans[0]?.price ?? 0);
@@ -88,6 +93,7 @@ const mapCatalogProduct = (row: CatalogProductRow): CatalogProduct => {
     price: minPrice,
     maxPrice,
     image_url: row.image_url ?? null,
+    images: normalizeImages(row.images),
     is_active: row.is_active,
     plans,
   };
