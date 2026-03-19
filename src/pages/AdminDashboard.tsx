@@ -146,7 +146,7 @@ const AdminDashboard = () => {
 
   // Bulk import/export
   const handleExport = () => {
-    const headers = ["name", "category", "price", "stock", "description", "is_active", "image_url"];
+    const headers = ["name", "category", "price", "description", "is_active", "image_url"];
     const csv = [
       headers.join(","),
       ...products.map((p) =>
