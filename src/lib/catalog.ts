@@ -21,6 +21,7 @@ export type CatalogProduct = {
   price: number;
   maxPrice: number;
   image_url: string | null;
+  images: string[];
   is_active: boolean;
   plans: CatalogPlan[];
 };
