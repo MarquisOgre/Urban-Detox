@@ -36,6 +36,7 @@ type CatalogProductRow = {
   health_benefits?: string | null;
   price?: number | string | null;
   image_url?: string | null;
+  images?: Json;
   is_active: boolean;
   plan_options?: Json;
 };
