@@ -82,6 +82,7 @@ const mapCatalogProduct = (row: CatalogProductRow): CatalogProduct => {
     category: row.category,
     description: row.description ?? "",
     ingredients: row.ingredients ?? null,
+    health_benefits: row.health_benefits ?? null,
     price: minPrice,
     maxPrice,
     image_url: row.image_url ?? null,
