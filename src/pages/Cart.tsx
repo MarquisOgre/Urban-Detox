@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Minus, Plus, Trash2, ShoppingBag, Upload } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+
+type UpiStep = "select" | "qr" | "txn";
 
 const Cart = () => {
   const { items, updateQuantity, removeItem, clearCart, totalPrice } = useCart();
@@ -21,6 +23,8 @@ const Cart = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [upiStep, setUpiStep] = useState<UpiStep>("select");
+  const [transactionId, setTransactionId] = useState("");
 
   const { data: paymentSettings } = useQuery({
     queryKey: ["settings", "payment"],
@@ -38,6 +42,10 @@ const Cart = () => {
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!detailsFilled) return;
+    if (paymentMethod === "upi" && !transactionId.trim()) {
+      toast.error("Please enter your UPI Transaction ID.");
+      return;
+    }
     setSubmitting(true);
     try {
       const { data: order, error: orderError } = await supabase
@@ -49,7 +57,8 @@ const Cart = () => {
           address: form.address,
           total: totalPrice,
           payment_method: paymentMethod,
-        })
+          transaction_id: paymentMethod === "upi" ? transactionId.trim() : null,
+        } as any)
         .select()
         .single();
 
@@ -203,36 +212,83 @@ const Cart = () => {
               </div>
             ) : (
               <div className="mt-4 space-y-4">
+                {/* COD */}
                 {paymentSettings?.cod_enabled !== false && (
                   <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} className="accent-primary" />
+                    <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => { setPaymentMethod("cod"); setUpiStep("select"); }} className="accent-primary" />
                     <div>
                       <p className="font-medium text-foreground">Cash on Delivery</p>
                       <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
                     </div>
                   </label>
                 )}
+
+                {/* UPI */}
                 {paymentSettings?.upi_enabled && (
-                  <>
-                    <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "upi" ? "border-primary bg-primary/5" : "border-border"}`}>
-                      <input type="radio" name="payment" value="upi" checked={paymentMethod === "upi"} onChange={() => setPaymentMethod("upi")} className="accent-primary" />
-                      <div>
-                        <p className="font-medium text-foreground">UPI Payment</p>
-                        <p className="text-xs text-muted-foreground">Pay via UPI: {paymentSettings.upi_id}</p>
-                      </div>
-                    </label>
-                    {paymentMethod === "upi" && paymentSettings.qr_code_url && (
-                      <div className="rounded-lg border border-border p-4 text-center">
-                        <p className="mb-2 text-sm font-medium text-foreground">Scan QR Code to Pay</p>
-                        <img src={paymentSettings.qr_code_url} alt="UPI QR Code" className="mx-auto h-48 w-48 rounded-lg object-contain" />
-                        <p className="mt-2 text-xs text-muted-foreground">UPI ID: {paymentSettings.upi_id}</p>
+                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "upi" ? "border-primary bg-primary/5" : "border-border"}`}>
+                    <input type="radio" name="payment" value="upi" checked={paymentMethod === "upi"} onChange={() => { setPaymentMethod("upi"); setUpiStep("qr"); }} className="accent-primary" />
+                    <div>
+                      <p className="font-medium text-foreground">UPI Payment</p>
+                      <p className="text-xs text-muted-foreground">Pay via UPI: {paymentSettings.upi_id}</p>
+                    </div>
+                  </label>
+                )}
+
+                {/* UPI Flow Steps */}
+                {paymentMethod === "upi" && paymentSettings?.upi_enabled && (
+                  <div className="space-y-4">
+                    {/* Step 1: QR Code */}
+                    {upiStep === "qr" && (
+                      <div className="rounded-lg border border-border p-4 text-center space-y-3">
+                        <p className="text-sm font-medium text-foreground">Scan QR Code to Pay ₹{totalPrice.toFixed(2)}</p>
+                        {paymentSettings.qr_code_url && (
+                          <img src={paymentSettings.qr_code_url} alt="UPI QR Code" className="mx-auto h-52 w-52 rounded-lg object-contain" />
+                        )}
+                        <p className="text-xs text-muted-foreground">UPI ID: {paymentSettings.upi_id}</p>
+                        <Button
+                          type="button"
+                          onClick={() => setUpiStep("txn")}
+                          className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" /> I've Made the Payment
+                        </Button>
                       </div>
                     )}
-                  </>
+
+                    {/* Step 2: Transaction ID */}
+                    {upiStep === "txn" && (
+                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                        <p className="text-sm font-medium text-foreground">Enter UPI Transaction ID</p>
+                        <p className="text-xs text-muted-foreground">Please enter the transaction/reference ID from your UPI app to confirm payment.</p>
+                        <Input
+                          placeholder="e.g. 412345678901"
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button type="button" variant="outline" size="sm" onClick={() => setUpiStep("qr")}>
+                            Back
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-                <Button type="submit" disabled={submitting} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
-                  {submitting ? "Placing Order..." : "Place Order"}
-                </Button>
+
+                {/* Place Order button */}
+                {paymentMethod === "cod" ? (
+                  <Button type="submit" disabled={submitting} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
+                    {submitting ? "Placing Order..." : "Place Order"}
+                  </Button>
+                ) : upiStep === "txn" ? (
+                  <Button
+                    type="submit"
+                    disabled={submitting || !transactionId.trim()}
+                    className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
+                  >
+                    {submitting ? "Placing Order..." : "Place Order"}
+                  </Button>
+                ) : null}
               </div>
             )}
           </Card>

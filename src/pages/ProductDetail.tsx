@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import PromoBanner from "@/components/PromoBanner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Leaf, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getCartProductId } from "@/lib/catalog";
@@ -69,14 +69,13 @@ const ProductDetail = () => {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 md:items-start">
+            {/* Full-size product image */}
             <div className="overflow-hidden rounded-xl border border-border bg-secondary/50">
-              <div className="flex min-h-[50vh] items-center justify-center p-4 md:min-h-[calc(100vh-240px)]">
-                <img
-                  src={product.image_url || "/placeholder.svg"}
-                  alt={product.name}
-                  className="max-h-[calc(100vh-260px)] w-full object-contain"
-                />
-              </div>
+              <img
+                src={product.image_url || "/placeholder.svg"}
+                alt={product.name}
+                className="w-full object-cover"
+              />
             </div>
 
             <div>
@@ -85,9 +84,22 @@ const ProductDetail = () => {
               <div className="mt-4 whitespace-pre-line text-muted-foreground">{product.description}</div>
 
               {product.ingredients && (
-                <div className="mt-5">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">Ingredients</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{product.ingredients}</p>
+                <div className="mt-5 rounded-lg border border-border bg-secondary/30 p-4">
+                  <div className="flex items-center gap-2">
+                    <Leaf className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">Ingredients</h2>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">{product.ingredients}</p>
+                </div>
+              )}
+
+              {product.health_benefits && (
+                <div className="mt-3 rounded-lg border border-border bg-primary/5 p-4">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">Health Benefits</h2>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">{product.health_benefits}</p>
                 </div>
               )}
 
