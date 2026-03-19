@@ -87,7 +87,7 @@ const AdminDashboard = () => {
   const [productDialog, setProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
-    name: "", category: "Wheatgrass", price: "", stock: "0", description: "", is_active: true, image_url: "",
+    name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "",
   });
   const [productImage, setProductImage] = useState<File | null>(null);
 
