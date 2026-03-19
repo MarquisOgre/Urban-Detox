@@ -122,9 +122,12 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          ingredients: string | null
           is_active: boolean
           name: string
+          plan_options: Json
           price: number
+          slug: string | null
           updated_at: string
         }
         Insert: {
@@ -133,9 +136,12 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_active?: boolean
           name: string
+          plan_options?: Json
           price: number
+          slug?: string | null
           updated_at?: string
         }
         Update: {
@@ -144,9 +150,12 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_active?: boolean
           name?: string
+          plan_options?: Json
           price?: number
+          slug?: string | null
           updated_at?: string
         }
         Relationships: []
