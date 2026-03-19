@@ -334,7 +334,6 @@ const AdminDashboard = () => {
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell>{p.category}</TableCell>
                       <TableCell>₹{p.price}</TableCell>
-                      <TableCell>{p.stock}</TableCell>
                       <TableCell>
                         <span className={`inline-block h-2 w-2 rounded-full ${p.is_active ? "bg-green-500" : "bg-red-500"}`} />
                       </TableCell>
