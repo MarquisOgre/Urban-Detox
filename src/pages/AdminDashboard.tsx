@@ -93,7 +93,7 @@ const AdminDashboard = () => {
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", stock: "0", description: "", is_active: true, image_url: "" });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "" });
     setProductImage(null);
     setProductDialog(true);
   };
