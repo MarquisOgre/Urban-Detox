@@ -6,7 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { getCartProductId } from "@/lib/catalog";
 import { useCatalogProducts } from "@/hooks/useCatalogProducts";
