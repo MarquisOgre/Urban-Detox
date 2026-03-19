@@ -496,15 +496,9 @@ const AdminDashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Price (₹)</Label>
-                <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
-              </div>
-              <div>
-                <Label>Stock</Label>
-                <Input type="number" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} className="mt-1" />
-              </div>
+            <div>
+              <Label>Price (₹)</Label>
+              <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
             </div>
             <div>
               <Label>Description</Label>
