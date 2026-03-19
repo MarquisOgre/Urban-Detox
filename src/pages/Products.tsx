@@ -67,7 +67,11 @@ const Products = () => {
               Our <span className="text-gradient-nature">Juices</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">Fresh, cold-pressed & delivered</p>
-          </div>
+            <Link to="/customise">
+              <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
+                <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
+              </Button>
+            </Link>
 
           <div className="flex flex-wrap justify-center gap-2">
             {categories.map((category) => (
