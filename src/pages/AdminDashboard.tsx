@@ -28,7 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { uploadImage } from "@/hooks/useImageUpload";
 import DetoxJuices from "@/components/DetoxJuices";
 
-const CATEGORIES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mixed Veg", "Tomato", "Wheatgrass"];
+const CATEGORIES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Custom", "Mixed Veg", "Tomato", "Wheatgrass"];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
