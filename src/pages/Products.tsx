@@ -72,6 +72,7 @@ const Products = () => {
                 <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
               </Button>
             </Link>
+          </div>
 
           <div className="flex flex-wrap justify-center gap-2">
             {categories.map((category) => (
