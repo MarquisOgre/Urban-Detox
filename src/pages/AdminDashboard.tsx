@@ -499,33 +499,45 @@ const AdminDashboard = () => {
 
       {/* Product Dialog */}
       <Dialog open={productDialog} onOpenChange={setProductDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Name</Label>
-              <Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="mt-1" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Name</Label>
+                <Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="mt-1" />
+              </div>
+              <div>
+                <Label>Slug (URL-friendly)</Label>
+                <Input placeholder="auto-generated if empty" value={productForm.slug} onChange={(e) => setProductForm({ ...productForm, slug: e.target.value })} className="mt-1" />
+              </div>
             </div>
-            <div>
-              <Label>Category</Label>
-              <Select value={productForm.category} onValueChange={(v) => setProductForm({ ...productForm, category: v })}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Price (₹)</Label>
-              <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Category</Label>
+                <Select value={productForm.category} onValueChange={(v) => setProductForm({ ...productForm, category: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Base Price (₹)</Label>
+                <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
+              </div>
             </div>
             <div>
               <Label>Description</Label>
               <Textarea value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} className="mt-1" rows={3} />
+            </div>
+            <div>
+              <Label>Ingredients</Label>
+              <Textarea placeholder="e.g. Fresh Ash Gourd, Lemon, Mint, Himalayan Salt" value={productForm.ingredients} onChange={(e) => setProductForm({ ...productForm, ingredients: e.target.value })} className="mt-1" rows={2} />
             </div>
             <div>
               <Label>Product Image</Label>
@@ -533,6 +545,64 @@ const AdminDashboard = () => {
                 <img src={productForm.image_url} alt="" className="mt-1 h-20 w-20 rounded object-cover" />
               )}
               <Input type="file" accept="image/*" onChange={(e) => setProductImage(e.target.files?.[0] || null)} className="mt-1" />
+            </div>
+
+            {/* Plan Options */}
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Plan Options</Label>
+                <Button type="button" variant="outline" size="sm" onClick={() => setProductForm({
+                  ...productForm,
+                  plans: [...productForm.plans, { key: "", label: "", subLabel: "", price: "", badge: "" }],
+                })}>
+                  <Plus className="mr-1 h-3 w-3" /> Add Plan
+                </Button>
+              </div>
+              <div className="mt-2 space-y-3">
+                {productForm.plans.map((plan, idx) => (
+                  <div key={idx} className="rounded-lg border border-border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Plan {idx + 1}</span>
+                      {productForm.plans.length > 1 && (
+                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                          const updated = productForm.plans.filter((_, i) => i !== idx);
+                          setProductForm({ ...productForm, plans: updated });
+                        }}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input placeholder="Key (e.g. reset)" value={plan.key} onChange={(e) => {
+                        const updated = [...productForm.plans];
+                        updated[idx] = { ...plan, key: e.target.value };
+                        setProductForm({ ...productForm, plans: updated });
+                      }} />
+                      <Input placeholder="Label (e.g. Urban Reset)" value={plan.label} onChange={(e) => {
+                        const updated = [...productForm.plans];
+                        updated[idx] = { ...plan, label: e.target.value };
+                        setProductForm({ ...productForm, plans: updated });
+                      }} />
+                      <Input placeholder="Sub-label (e.g. 1 Day Detox)" value={plan.subLabel} onChange={(e) => {
+                        const updated = [...productForm.plans];
+                        updated[idx] = { ...plan, subLabel: e.target.value };
+                        setProductForm({ ...productForm, plans: updated });
+                      }} />
+                      <Input type="number" placeholder="Price (₹)" value={plan.price} onChange={(e) => {
+                        const updated = [...productForm.plans];
+                        updated[idx] = { ...plan, price: e.target.value };
+                        setProductForm({ ...productForm, plans: updated });
+                      }} />
+                    </div>
+                    <Input placeholder="Badge (optional, e.g. Best Value)" value={plan.badge} onChange={(e) => {
+                      const updated = [...productForm.plans];
+                      updated[idx] = { ...plan, badge: e.target.value };
+                      setProductForm({ ...productForm, plans: updated });
+                    }} />
+                  </div>
+                ))}
+              </div>
+            </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={productForm.is_active} onCheckedChange={(v) => setProductForm({ ...productForm, is_active: v })} />
