@@ -641,11 +641,38 @@ const AdminDashboard = () => {
               <Textarea placeholder="e.g. Boosts immunity, aids digestion, detoxifies liver" value={productForm.health_benefits} onChange={(e) => setProductForm({ ...productForm, health_benefits: e.target.value })} className="mt-1" rows={2} />
             </div>
             <div>
-              <Label>Product Image</Label>
+              <Label>Main Product Image</Label>
               {productForm.image_url && (
                 <img src={productForm.image_url} alt="" className="mt-1 h-20 w-20 rounded object-cover" />
               )}
               <Input type="file" accept="image/*" onChange={(e) => setProductImage(e.target.files?.[0] || null)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Additional Images</Label>
+              {productForm.images.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {productForm.images.map((img, idx) => (
+                    <div key={idx} className="relative group">
+                      <img src={img} alt="" className="h-16 w-16 rounded object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({ ...productForm, images: productForm.images.filter((_, i) => i !== idx) })}
+                        className="absolute -right-1 -top-1 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setAdditionalImages(Array.from(e.target.files || []))}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Select multiple images to upload as gallery photos.</p>
             </div>
 
             {/* Plan Options */}
