@@ -84,6 +84,13 @@ const ProductDetail = () => {
               <h1 className="mt-2 font-display text-3xl font-bold text-foreground md:text-4xl">{product.name}</h1>
               <div className="mt-4 whitespace-pre-line text-muted-foreground">{product.description}</div>
 
+              {product.ingredients && (
+                <div className="mt-5">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">Ingredients</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{product.ingredients}</p>
+                </div>
+              )}
+
               {product.plans.length > 0 && (
                 <div className="mt-6">
                   <p className="mb-2 text-sm font-medium text-foreground">Select Plan</p>
