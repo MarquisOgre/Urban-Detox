@@ -17,6 +17,7 @@ export type CatalogProduct = {
   category: string;
   description: string;
   ingredients: string | null;
+  health_benefits: string | null;
   price: number;
   maxPrice: number;
   image_url: string | null;
@@ -31,6 +32,7 @@ type CatalogProductRow = {
   category: string;
   description?: string | null;
   ingredients?: string | null;
+  health_benefits?: string | null;
   price?: number | string | null;
   image_url?: string | null;
   is_active: boolean;
@@ -40,7 +42,7 @@ type CatalogProductRow = {
 export const DEFAULT_PLAN_OPTIONS: CatalogPlan[] = [
   { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: 79 },
   { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: 499 },
-  { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: 1799, badge: "Best Value" },
+  { key: "transform", label: "Urban Transform", subLabel: "30 Day Detox", price: 1999, badge: "Best Value" },
 ];
 
 const normalizePlanOptions = (value: Json | undefined): CatalogPlan[] => {
@@ -80,6 +82,7 @@ const mapCatalogProduct = (row: CatalogProductRow): CatalogProduct => {
     category: row.category,
     description: row.description ?? "",
     ingredients: row.ingredients ?? null,
+    health_benefits: row.health_benefits ?? null,
     price: minPrice,
     maxPrice,
     image_url: row.image_url ?? null,
