@@ -84,6 +84,7 @@ export type Database = {
           payment_method: string
           status: string
           total: number
+          transaction_id: string | null
           updated_at: string
           user_email: string | null
           user_name: string
@@ -96,6 +97,7 @@ export type Database = {
           payment_method?: string
           status?: string
           total: number
+          transaction_id?: string | null
           updated_at?: string
           user_email?: string | null
           user_name: string
@@ -108,6 +110,7 @@ export type Database = {
           payment_method?: string
           status?: string
           total?: number
+          transaction_id?: string | null
           updated_at?: string
           user_email?: string | null
           user_name?: string
@@ -120,6 +123,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          health_benefits: string | null
           id: string
           image_url: string | null
           ingredients: string | null
@@ -134,6 +138,7 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          health_benefits?: string | null
           id?: string
           image_url?: string | null
           ingredients?: string | null
@@ -148,6 +153,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          health_benefits?: string | null
           id?: string
           image_url?: string | null
           ingredients?: string | null
