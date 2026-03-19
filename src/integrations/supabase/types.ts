@@ -74,13 +74,6 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       orders: {
@@ -132,7 +125,6 @@ export type Database = {
           is_active: boolean
           name: string
           price: number
-          stock: number
           updated_at: string
         }
         Insert: {
@@ -144,7 +136,6 @@ export type Database = {
           is_active?: boolean
           name: string
           price: number
-          stock?: number
           updated_at?: string
         }
         Update: {
@@ -156,7 +147,6 @@ export type Database = {
           is_active?: boolean
           name?: string
           price?: number
-          stock?: number
           updated_at?: string
         }
         Relationships: []

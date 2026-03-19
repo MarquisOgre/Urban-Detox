@@ -87,13 +87,13 @@ const AdminDashboard = () => {
   const [productDialog, setProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
-    name: "", category: "Wheatgrass", price: "", stock: "0", description: "", is_active: true, image_url: "",
+    name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "",
   });
   const [productImage, setProductImage] = useState<File | null>(null);
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", stock: "0", description: "", is_active: true, image_url: "" });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", is_active: true, image_url: "" });
     setProductImage(null);
     setProductDialog(true);
   };
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
   const openEditProduct = (p: any) => {
     setEditingProduct(p);
     setProductForm({
-      name: p.name, category: p.category, price: String(p.price), stock: String(p.stock),
+      name: p.name, category: p.category, price: String(p.price),
       description: p.description || "", is_active: p.is_active, image_url: p.image_url || "",
     });
     setProductImage(null);
@@ -119,7 +119,6 @@ const AdminDashboard = () => {
       name: productForm.name,
       category: productForm.category,
       price: Number(productForm.price),
-      stock: Number(productForm.stock),
       description: productForm.description || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
@@ -147,7 +146,7 @@ const AdminDashboard = () => {
 
   // Bulk import/export
   const handleExport = () => {
-    const headers = ["name", "category", "price", "stock", "description", "is_active", "image_url"];
+    const headers = ["name", "category", "price", "description", "is_active", "image_url"];
     const csv = [
       headers.join(","),
       ...products.map((p) =>
@@ -191,7 +190,6 @@ const AdminDashboard = () => {
         name: row.name,
         category: row.category,
         price: Number(row.price),
-        stock: Number(row.stock) || 0,
         description: row.description || null,
         is_active: row.is_active === "false" ? false : true,
         image_url: row.image_url || null,
@@ -208,7 +206,7 @@ const AdminDashboard = () => {
   };
 
   const downloadTemplate = () => {
-    const csv = "name,category,price,stock,description,is_active,image_url\nWheatgrass Shot 500ml,Wheatgrass,150,50,Fresh cold-pressed wheatgrass juice,true,\nCarrot Glow 300ml,Carrot,120,30,Pure carrot juice for glowing skin,true,";
+    const csv = "name,category,price,description,is_active,image_url\nWheatgrass Shot,Wheatgrass,150,Fresh cold-pressed wheatgrass juice,true,\nCarrot Glow,Carrot,120,Pure carrot juice for glowing skin,true,";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -323,7 +321,6 @@ const AdminDashboard = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
-                    <TableHead>Stock</TableHead>
                     <TableHead>Active</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -337,7 +334,6 @@ const AdminDashboard = () => {
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell>{p.category}</TableCell>
                       <TableCell>₹{p.price}</TableCell>
-                      <TableCell>{p.stock}</TableCell>
                       <TableCell>
                         <span className={`inline-block h-2 w-2 rounded-full ${p.is_active ? "bg-green-500" : "bg-red-500"}`} />
                       </TableCell>
@@ -500,15 +496,9 @@ const AdminDashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Price (₹)</Label>
-                <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
-              </div>
-              <div>
-                <Label>Stock</Label>
-                <Input type="number" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} className="mt-1" />
-              </div>
+            <div>
+              <Label>Price (₹)</Label>
+              <Input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="mt-1" />
             </div>
             <div>
               <Label>Description</Label>

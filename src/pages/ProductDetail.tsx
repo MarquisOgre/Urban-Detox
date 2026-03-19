@@ -29,7 +29,6 @@ const ProductDetail = () => {
     : [];
 
   const activePrice = selectedVariation?.price ?? product?.price ?? 0;
-  const activeStock = selectedVariation?.stock ?? product?.stock ?? 0;
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -47,10 +46,10 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background pb-14">
       <PromoBanner />
       <Navbar />
-      <main className="container mx-auto px-4 pt-4 pb-14">
-        {/* <button onClick={() => navigate("/products")} className="mb-2 inline-flex items-center justify-center rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+      <main className="container mx-auto px-4 pt-2 pb-14">
+        <button onClick={() => navigate("/products")} className="mb-2 inline-flex items-center justify-center rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
           <ArrowLeft className="h-5 w-5" />
-        </button> */}
+        </button>
 
         {!product ? (
           <div className="py-20 text-center">
@@ -67,7 +66,7 @@ const ProductDetail = () => {
                 <img
                   src={getProductImage(product.name, images[selectedImage] || product.image_url)}
                   alt={product.name}
-                  className="h-full w-full object-cover aspect-square"
+                  className="w-full object-cover max-h-[calc(100vh-220px)]"
                 />
               </div>
               {images.length > 1 && (
@@ -101,21 +100,27 @@ const ProductDetail = () => {
               {/* Variations */}
               {product.variations && product.variations.length > 0 && (
                 <div className="mt-6">
-                  <p className="text-sm font-medium text-foreground mb-2">Select Size</p>
+                  <p className="text-sm font-medium text-foreground mb-2">Select Plan</p>
                   <div className="flex flex-wrap gap-2">
                     {product.variations.map((v) => (
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariation(v)}
                         className={cn(
-                          "rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all",
+                          "rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all relative",
                           selectedVariation?.id === v.id
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border text-muted-foreground hover:border-primary/50"
                         )}
                       >
-                        <span className="block">{v.label}</span>
-                        <span className="block text-xs font-bold">₹{v.price}</span>
+                        {v.badge && (
+                          <span className="absolute -top-2 -right-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                            {v.badge}
+                          </span>
+                        )}
+                        <span className="block font-semibold">{v.label}</span>
+                        <span className="block text-xs opacity-70">{v.subLabel}</span>
+                        <span className="block text-xs font-bold mt-0.5">₹{v.price}</span>
                       </button>
                     ))}
                   </div>
@@ -123,12 +128,11 @@ const ProductDetail = () => {
               )}
 
               <p className="mt-6 font-display text-3xl font-bold text-foreground">₹{activePrice}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {activeStock > 0 ? `${activeStock} in stock` : "Out of stock"}
+              <p className="mt-1 text-sm text-muted-foreground">
+                ₹{product.price} – ₹{product.maxPrice}
               </p>
               <Button
                 onClick={handleAddToCart}
-                disabled={activeStock <= 0}
                 className="mt-6 bg-nature-gradient text-primary-foreground hover:opacity-90"
                 size="lg"
               >
