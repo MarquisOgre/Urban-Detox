@@ -47,7 +47,7 @@ const normalizePlanOptions = (value: Json | undefined): CatalogPlan[] => {
   if (!Array.isArray(value)) return DEFAULT_PLAN_OPTIONS;
 
   const plans = value
-    .map((item) => {
+    .map<CatalogPlan | null>((item) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) return null;
 
       const plan = item as Record<string, unknown>;
@@ -59,9 +59,9 @@ const normalizePlanOptions = (value: Json | undefined): CatalogPlan[] => {
 
       if (!key || !label || !subLabel || Number.isNaN(price)) return null;
 
-      return { key, label, subLabel, price, badge } satisfies CatalogPlan;
+      return { key, label, subLabel, price, badge };
     })
-    .filter((plan): plan is CatalogPlan => Boolean(plan));
+    .filter((plan): plan is CatalogPlan => plan !== null);
 
   return plans.length > 0 ? plans : DEFAULT_PLAN_OPTIONS;
 };
