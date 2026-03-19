@@ -135,6 +135,14 @@ const AdminDashboard = () => {
       if (url) imageUrl = url;
     }
 
+    // Upload additional images
+    const uploadedAdditional: string[] = [];
+    for (const file of additionalImages) {
+      const url = await uploadImage(file, "products");
+      if (url) uploadedAdditional.push(url);
+    }
+    const allImages = [...productForm.images, ...uploadedAdditional];
+
     const planOptions = productForm.plans.map((pl) => ({
       key: pl.key, label: pl.label, subLabel: pl.subLabel,
       price: Number(pl.price), ...(pl.badge ? { badge: pl.badge } : {}),
@@ -150,6 +158,7 @@ const AdminDashboard = () => {
       slug: productForm.slug || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
+      images: allImages,
       plan_options: planOptions,
     };
 
