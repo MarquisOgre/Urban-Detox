@@ -17,6 +17,7 @@ export type CatalogProduct = {
   category: string;
   description: string;
   ingredients: string | null;
+  health_benefits: string | null;
   price: number;
   maxPrice: number;
   image_url: string | null;
