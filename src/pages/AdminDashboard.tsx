@@ -206,7 +206,7 @@ const AdminDashboard = () => {
   };
 
   const downloadTemplate = () => {
-    const csv = "name,category,price,stock,description,is_active,image_url\nWheatgrass Shot 500ml,Wheatgrass,150,50,Fresh cold-pressed wheatgrass juice,true,\nCarrot Glow 300ml,Carrot,120,30,Pure carrot juice for glowing skin,true,";
+    const csv = "name,category,price,description,is_active,image_url\nWheatgrass Shot,Wheatgrass,150,Fresh cold-pressed wheatgrass juice,true,\nCarrot Glow,Carrot,120,Pure carrot juice for glowing skin,true,";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
