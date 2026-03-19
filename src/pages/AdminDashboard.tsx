@@ -130,13 +130,21 @@ const AdminDashboard = () => {
       if (url) imageUrl = url;
     }
 
+    const planOptions = productForm.plans.map((pl) => ({
+      key: pl.key, label: pl.label, subLabel: pl.subLabel,
+      price: Number(pl.price), ...(pl.badge ? { badge: pl.badge } : {}),
+    }));
+
     const payload = {
       name: productForm.name,
       category: productForm.category,
       price: Number(productForm.price),
       description: productForm.description || null,
+      ingredients: productForm.ingredients || null,
+      slug: productForm.slug || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
+      plan_options: planOptions,
     };
 
     if (editingProduct) {
