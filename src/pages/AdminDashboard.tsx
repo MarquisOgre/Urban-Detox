@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package, ShoppingCart, Clock, DollarSign,
-  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater,
+  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater, CreditCard, CheckCircle, XCircle,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -87,11 +87,11 @@ const AdminDashboard = () => {
   const [productDialog, setProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
-    name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", slug: "", is_active: true, image_url: "",
+    name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "",
     plans: [
       { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
       { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: "499", badge: "" },
-      { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: "1799", badge: "Best Value" },
+      { key: "transform", label: "Urban Transform", subLabel: "30 Day Detox", price: "1999", badge: "Best Value" },
     ] as { key: string; label: string; subLabel: string; price: string; badge: string }[],
   });
   const [productImage, setProductImage] = useState<File | null>(null);
@@ -99,12 +99,12 @@ const AdminDashboard = () => {
   const defaultPlans = [
     { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
     { key: "cleanse", label: "Urban Cleanse", subLabel: "7 Day Detox", price: "499", badge: "" },
-    { key: "transform", label: "Urban Transform", subLabel: "28 Day Detox", price: "1799", badge: "Best Value" },
+    { key: "transform", label: "Urban Transform", subLabel: "30 Day Detox", price: "1999", badge: "Best Value" },
   ];
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", slug: "", is_active: true, image_url: "", plans: defaultPlans });
+    setProductForm({ name: "", category: "Wheatgrass", price: "", description: "", ingredients: "", health_benefits: "", slug: "", is_active: true, image_url: "", plans: defaultPlans });
     setProductImage(null);
     setProductDialog(true);
   };
@@ -116,8 +116,8 @@ const AdminDashboard = () => {
       : defaultPlans;
     setProductForm({
       name: p.name, category: p.category, price: String(p.price),
-      description: p.description || "", ingredients: p.ingredients || "", slug: p.slug || "",
-      is_active: p.is_active, image_url: p.image_url || "", plans: existingPlans,
+      description: p.description || "", ingredients: p.ingredients || "", health_benefits: (p as any).health_benefits || "",
+      slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", plans: existingPlans,
     });
     setProductImage(null);
     setProductDialog(true);
@@ -135,12 +135,13 @@ const AdminDashboard = () => {
       price: Number(pl.price), ...(pl.badge ? { badge: pl.badge } : {}),
     }));
 
-    const payload = {
+    const payload: any = {
       name: productForm.name,
       category: productForm.category,
       price: Number(productForm.price),
       description: productForm.description || null,
       ingredients: productForm.ingredients || null,
+      health_benefits: productForm.health_benefits || null,
       slug: productForm.slug || null,
       is_active: productForm.is_active,
       image_url: imageUrl || null,
@@ -256,10 +257,27 @@ const AdminDashboard = () => {
     if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status });
   };
 
+  const deleteOrder = async (orderId: string) => {
+    // Delete order items first, then the order
+    await supabase.from("order_items").delete().eq("order_id", orderId);
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (error) { toast.error("Failed to delete order"); return; }
+    toast.success("Order deleted");
+    refetchOrders();
+    queryClient.invalidateQueries({ queryKey: ["admin-order-items"] });
+  };
+
   const deleteMessage = async (id: string) => {
     await supabase.from("contact_messages").delete().eq("id", id);
     refetchMessages();
     toast.success("Message deleted");
+  };
+
+  // Payment verification
+  const upiOrders = orders.filter((o) => o.payment_method === "upi");
+
+  const updatePaymentStatus = async (orderId: string, status: string) => {
+    await updateOrderStatus(orderId, status);
   };
 
   if (!authChecked) return null;
@@ -310,6 +328,9 @@ const AdminDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="messages" className="flex items-center gap-1.5 data-[state=active]:bg-card">
               <Mail className="h-4 w-4" /> Messages
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-1.5 data-[state=active]:bg-card">
+              <CreditCard className="h-4 w-4" /> Payments
             </TabsTrigger>
             <TabsTrigger value="detox" className="flex items-center gap-1.5 data-[state=active]:bg-card">
               <GlassWater className="h-4 w-4" /> Detox Juice
@@ -432,6 +453,9 @@ const AdminDashboard = () => {
                               <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
+                          <Button variant="ghost" size="icon" onClick={() => deleteOrder(o.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -489,6 +513,65 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
+          {/* PAYMENTS TAB */}
+          <TabsContent value="payments">
+            <Card className="overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-border p-5">
+                <CreditCard className="h-5 w-5 text-primary" />
+                <h2 className="font-display text-lg font-bold text-foreground">UPI Payments</h2>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {upiOrders.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell className="font-mono text-xs">{o.id.slice(0, 8)}</TableCell>
+                      <TableCell className="font-medium">{o.user_name}</TableCell>
+                      <TableCell>{o.user_phone}</TableCell>
+                      <TableCell>₹{o.total}</TableCell>
+                      <TableCell className="font-mono text-xs">{(o as any).transaction_id || "-"}</TableCell>
+                      <TableCell>
+                        <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusColors[o.status] || ""}`}>
+                          {o.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs">{new Date(o.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" title="Verify" onClick={() => updatePaymentStatus(o.id, "processing")}>
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Cancel" onClick={() => updatePaymentStatus(o.id, "cancelled")}>
+                            <XCircle className="h-4 w-4 text-yellow-600" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteOrder(o.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {upiOrders.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">No UPI payments yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Card>
+          </TabsContent>
+
           {/* DETOX JUICE TAB */}
           <TabsContent value="detox">
             <DetoxJuices onBackToDashboard={() => {}} />
@@ -538,6 +621,10 @@ const AdminDashboard = () => {
             <div>
               <Label>Ingredients</Label>
               <Textarea placeholder="e.g. Fresh Ash Gourd, Lemon, Mint, Himalayan Salt" value={productForm.ingredients} onChange={(e) => setProductForm({ ...productForm, ingredients: e.target.value })} className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label>Health Benefits</Label>
+              <Textarea placeholder="e.g. Boosts immunity, aids digestion, detoxifies liver" value={productForm.health_benefits} onChange={(e) => setProductForm({ ...productForm, health_benefits: e.target.value })} className="mt-1" rows={2} />
             </div>
             <div>
               <Label>Product Image</Label>
@@ -629,6 +716,9 @@ const AdminDashboard = () => {
                 <div><span className="text-muted-foreground">Phone:</span> {selectedOrder.user_phone}</div>
                 <div><span className="text-muted-foreground">Email:</span> {selectedOrder.user_email || "-"}</div>
                 <div><span className="text-muted-foreground">Payment:</span> {selectedOrder.payment_method.toUpperCase()}</div>
+                {selectedOrder.transaction_id && (
+                  <div className="col-span-2"><span className="text-muted-foreground">Transaction ID:</span> <span className="font-mono">{selectedOrder.transaction_id}</span></div>
+                )}
                 <div className="col-span-2"><span className="text-muted-foreground">Address:</span> {selectedOrder.address}</div>
                 <div><span className="text-muted-foreground">Date:</span> {new Date(selectedOrder.created_at).toLocaleString()}</div>
                 <div><span className="text-muted-foreground">Total:</span> <span className="font-bold text-primary">₹{selectedOrder.total}</span></div>
