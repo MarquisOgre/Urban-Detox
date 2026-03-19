@@ -32,6 +32,7 @@ type CatalogProductRow = {
   category: string;
   description?: string | null;
   ingredients?: string | null;
+  health_benefits?: string | null;
   price?: number | string | null;
   image_url?: string | null;
   is_active: boolean;
