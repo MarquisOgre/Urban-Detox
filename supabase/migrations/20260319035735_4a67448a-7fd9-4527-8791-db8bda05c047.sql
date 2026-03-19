@@ -1,0 +1,3 @@
+
+ALTER TABLE public.order_items DROP CONSTRAINT IF EXISTS order_items_product_id_fkey;
+ALTER TABLE public.products DROP COLUMN IF EXISTS stock;
