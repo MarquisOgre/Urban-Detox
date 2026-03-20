@@ -64,6 +64,11 @@ const Cart = () => {
     [form.name, form.phone, form.address],
   );
 
+  const sanitizePhone = (phone: string) => phone.replace(/[^0-9]/g, "");
+
+  const buildWhatsAppUrl = (phone: string, lines: string[]) =>
+    `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(lines.join("\n"))}`;
+
   const whatsappOrderUrl = useMemo(() => {
     if (!whatsappSettings?.enabled || !whatsappSettings?.number || items.length === 0 || !detailsFilled) return null;
 
@@ -82,7 +87,7 @@ const Cart = () => {
       `*Address:* ${form.address}`,
     ].filter(Boolean);
 
-    return `https://wa.me/${whatsappSettings.number}?text=${encodeURIComponent(lines.join("\n"))}`;
+    return buildWhatsAppUrl(whatsappSettings.number, lines as string[]);
   }, [whatsappSettings, items, detailsFilled, totalPrice, paymentMethod, transactionId, form]);
 
   const saveRecentOrder = (order: PlacedOrderSummary) => {
@@ -143,6 +148,29 @@ const Cart = () => {
       saveRecentOrder(summary);
       clearCart();
       toast.success("Order placed successfully!");
+
+      // Auto-send WhatsApp order confirmation
+      if (whatsappSettings?.enabled && whatsappSettings?.number) {
+        const confirmLines = [
+          "*✅ Order Confirmed!*",
+          "",
+          `*Order ID:* ${order.id.slice(0, 8).toUpperCase()}`,
+          "",
+          ...items.map((item) => `• ${item.name} x ${item.quantity} — ₹${item.price * item.quantity}`),
+          "",
+          `*Total:* ₹${totalPrice.toFixed(2)}`,
+          `*Payment:* ${paymentMethod.toUpperCase()}`,
+          paymentMethod === "upi" && transactionId.trim() ? `*Transaction ID:* ${transactionId.trim()}` : null,
+          "",
+          `*Customer:* ${form.name}`,
+          `*Phone:* ${form.phone}`,
+          form.email.trim() ? `*Email:* ${form.email.trim()}` : null,
+          `*Address:* ${form.address}`,
+        ].filter(Boolean);
+
+        const confirmUrl = buildWhatsAppUrl(whatsappSettings.number, confirmLines as string[]);
+        window.open(confirmUrl, "_blank");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to place order. Please try again.";
       toast.error(message);
