@@ -11,7 +11,7 @@ interface DetoxJuicesProps {
   onBackToDashboard: () => void;
 }
 
-type JuiceType = 'all' | 'ash_gourd' | 'beetroot' | 'carrot' | 'mix_veg' | 'wheatgrass';
+type JuiceType = 'all' | 'ash_gourd' | 'beetroot' | 'carrot' | 'cucumber' | 'mix_veg' | 'tomato' | 'wheatgrass';
 type MethodType = 'sujatha' | 'mixer';
 
 interface IngredientRow {
@@ -22,147 +22,186 @@ interface IngredientRow {
 }
 
 const PRICES: Record<string, number> = {
-  'Amla': 105,
-  'Ash Gourd': 23,
+  'Ash Gourd': 40,
   'Beetroot': 40,
-  'Black Salt': 60,
-  'Bottle Gourd': 29,
+  'Black Salt': 150,
+  'Bottle Gourd': 30,
   'Carrot': 60,
-  'Coriander Leaves': 80,
-  'Cucumber': 34,
+  'Coriander Leaves': 100,
+  'Cucumber': 40,
   'Ginger': 135,
   'Lemon Juice': 200,
   'Mint Leaves': 100,
   'Tomato':30,
   'Water': 1,
-  'Wheatgrass': 200,
+  'Wheatgrass': 1000,
 };
 
 const BOTTLE_COST = 4;
 
-// Day multipliers for 7-day plan: Ash Gourd ×2, Wheatgrass ×2, others ×1
+// Day multipliers for 7-day plan: 7 Juices 7 Days of the week
 const DAY_MULTIPLIERS: Record<string, number> = {
-  ash_gourd: 2,
-  wheatgrass: 2,
-  beetroot: 1,
+  ash_gourd: 1,
+  beetroot: 1,  
   carrot: 1,
+  cucumber: 1,
   mix_veg: 1,
+  tomato: 1,   
+  wheatgrass: 1,
 };
 
 const SUJATHA_RECIPES: Record<string, IngredientRow[]> = {
-  wheatgrass: [
-    { name: 'Wheatgrass', quantity: 400, unit: 'g', pricePerKg: PRICES['Wheatgrass'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-  ],
   ash_gourd: [
-    { name: 'Ash Gourd', quantity: 3500, unit: 'g', pricePerKg: PRICES['Ash Gourd'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Ash Gourd', quantity: 2600, unit: 'g', pricePerKg: PRICES['Ash Gourd'] },
+    { name: 'Cucumber', quantity: 1800, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
     { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-  ],
-  carrot: [
-    { name: 'Carrot', quantity: 3500, unit: 'g', pricePerKg: PRICES['Carrot'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
   ],
   beetroot: [
-    { name: 'Beetroot', quantity: 3200, unit: 'g', pricePerKg: PRICES['Beetroot'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Beetroot', quantity: 2000, unit: 'g', pricePerKg: PRICES['Beetroot'] },
+    { name: 'Tomato', quantity: 1000, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
     { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
   ],
+  carrot: [
+    { name: 'Carrot', quantity: 2000, unit: 'g', pricePerKg: PRICES['Carrot'] },
+    { name: 'Tomato', quantity: 1000, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],
+  cucumber: [
+    { name: 'Cucumber', quantity: 2000, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Bottle Gourd', quantity: 1000, unit: 'g', pricePerKg: PRICES['Bottle Gourd'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],    
   mix_veg: [
-    { name: 'Carrot', quantity: 1400, unit: 'g', pricePerKg: PRICES['Carrot'] },
     { name: 'Beetroot', quantity: 1000, unit: 'g', pricePerKg: PRICES['Beetroot'] },
-    { name: 'Cucumber', quantity: 900, unit: 'g', pricePerKg: PRICES['Cucumber'] },
     { name: 'Bottle Gourd', quantity: 800, unit: 'g', pricePerKg: PRICES['Bottle Gourd'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Carrot', quantity: 1400, unit: 'g', pricePerKg: PRICES['Carrot'] },
+    { name: 'Cucumber', quantity: 900, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Tomato', quantity: 1200, unit: 'g', pricePerKg: PRICES['Tomato'] },    
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
     { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Tomato', quantity: 1200, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
   ],
+  tomato: [
+    { name: 'Tomato', quantity: 2000, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Cucumber', quantity: 1000, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],  
+  wheatgrass: [
+    { name: 'Wheatgrass', quantity: 250, unit: 'g', pricePerKg: PRICES['Wheatgrass'] },
+    { name: 'Cucumber', quantity: 600, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Coriander Leaves', quantity: 20, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 10, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 10, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 30, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 5, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],  
 };
 
 const MIXER_RECIPES: Record<string, IngredientRow[]> = {
-  wheatgrass: [
-    { name: 'Wheatgrass', quantity: 400, unit: 'g', pricePerKg: PRICES['Wheatgrass'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Water', quantity: 2200, unit: 'ml', pricePerKg: PRICES['Water'] },
-  ],
   ash_gourd: [
-    { name: 'Ash Gourd', quantity: 2500, unit: 'g', pricePerKg: PRICES['Ash Gourd'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Ash Gourd', quantity: 1800, unit: 'g', pricePerKg: PRICES['Ash Gourd'] },
+    { name: 'Cucumber', quantity: 700, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Water', quantity: 600, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
     { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Water', quantity: 1000, unit: 'ml', pricePerKg: PRICES['Water'] },
-  ],
-  carrot: [
-    { name: 'Carrot', quantity: 2500, unit: 'g', pricePerKg: PRICES['Carrot'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Water', quantity: 1200, unit: 'ml', pricePerKg: PRICES['Water'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
   ],
   beetroot: [
-    { name: 'Beetroot', quantity: 2300, unit: 'g', pricePerKg: PRICES['Beetroot'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Water', quantity: 1200, unit: 'ml', pricePerKg: PRICES['Water'] },
-  ],
-  mix_veg: [
-    { name: 'Carrot', quantity: 1000, unit: 'g', pricePerKg: PRICES['Carrot'] },
-    { name: 'Beetroot', quantity: 800, unit: 'g', pricePerKg: PRICES['Beetroot'] },
-    { name: 'Cucumber', quantity: 600, unit: 'g', pricePerKg: PRICES['Cucumber'] },
-    { name: 'Bottle Gourd', quantity: 500, unit: 'g', pricePerKg: PRICES['Bottle Gourd'] },
-    { name: 'Amla', quantity: 80, unit: 'g', pricePerKg: PRICES['Amla'] },
-    { name: 'Coriander Leaves', quantity: 60, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
-    { name: 'Mint Leaves', quantity: 30, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
-    { name: 'Ginger', quantity: 50, unit: 'g', pricePerKg: PRICES['Ginger'] },
-    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
-    { name: 'Black Salt', quantity: 6, unit: 'g', pricePerKg: PRICES['Black Salt'] },
-    { name: 'Water', quantity: 1200, unit: 'ml', pricePerKg: PRICES['Water'] },
+    { name: 'Beetroot', quantity: 1600, unit: 'g', pricePerKg: PRICES['Beetroot'] },
     { name: 'Tomato', quantity: 800, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Water', quantity: 700, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
   ],
+  carrot: [
+    { name: 'Carrot', quantity: 1700, unit: 'g', pricePerKg: PRICES['Carrot'] },
+    { name: 'Tomato', quantity: 800, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Water', quantity: 600, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],
+  cucumber: [
+    { name: 'Cucumber', quantity: 1700, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Bottle Gourd', quantity: 800, unit: 'g', pricePerKg: PRICES['Bottle Gourd'] },
+    { name: 'Water', quantity: 600, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],    
+  mix_veg: [
+    { name: 'Beetroot', quantity: 400, unit: 'g', pricePerKg: PRICES['Beetroot'] },
+    { name: 'Bottle Gourd', quantity: 400, unit: 'g', pricePerKg: PRICES['Bottle Gourd'] },
+    { name: 'Carrot', quantity: 500, unit: 'g', pricePerKg: PRICES['Carrot'] },
+    { name: 'Cucumber', quantity: 400, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Tomato', quantity: 400, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Water', quantity: 700, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],
+  tomato: [
+    { name: 'Tomato', quantity: 1700, unit: 'g', pricePerKg: PRICES['Tomato'] },
+    { name: 'Cucumber', quantity: 700 , unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Water', quantity: 600, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 50, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 40, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 40, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 50, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 10, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ],  
+  wheatgrass: [
+    { name: 'Wheatgrass', quantity: 250, unit: 'g', pricePerKg: PRICES['Wheatgrass'] },
+    { name: 'Cucumber', quantity: 600, unit: 'g', pricePerKg: PRICES['Cucumber'] },
+    { name: 'Water', quantity: 700, unit: 'g', pricePerKg: PRICES['Water'] },
+    { name: 'Coriander Leaves', quantity: 20, unit: 'g', pricePerKg: PRICES['Coriander Leaves'] },
+    { name: 'Mint Leaves', quantity: 10, unit: 'g', pricePerKg: PRICES['Mint Leaves'] },
+    { name: 'Ginger', quantity: 10, unit: 'g', pricePerKg: PRICES['Ginger'] },
+    { name: 'Lemon Juice', quantity: 30, unit: 'ml', pricePerKg: PRICES['Lemon Juice'] },
+    { name: 'Black Salt', quantity: 5, unit: 'g', pricePerKg: PRICES['Black Salt'] },
+  ], 
 };
 
 const JUICE_LABELS: Record<string, string> = {
   ash_gourd: 'Ash Gourd Juice',
   beetroot: 'Beetroot Juice',
   carrot: 'Carrot Juice',
+  cucumber: 'Cucumber Juice',
   mix_veg: 'Mix Veg Juice',
+  tomato: 'Tomato Juice',
   wheatgrass: 'Wheat Grass Shot',
 };
 
@@ -183,7 +222,7 @@ const DetoxJuices = ({ onBackToDashboard }: DetoxJuicesProps) => {
 
   const computedData = useMemo(() => {
     if (juiceType === 'all') {
-      // 7-day plan: Ash Gourd ×2, Wheatgrass ×2, Beetroot ×1, Carrot ×1, Mix Veg ×1 = 7 days
+    // Day multipliers for 7-day plan: 7 Juices 7 Days of the week
       const aggregated: Record<string, { name: string; unit: string; pricePerKg: number; scaledQty: number; cost: number }> = {};
       const totalDays = 7;
       const totalBottles = totalDays * bottleCount;
@@ -211,7 +250,7 @@ const DetoxJuices = ({ onBackToDashboard }: DetoxJuicesProps) => {
 
       return [{
         key: 'all',
-        label: `Weekly Plan (7 Days) — Ash Gourd ×2, Wheatgrass ×2, Beetroot ×1, Carrot ×1, Mix Veg ×1`,
+        label: `Weekly Plan (7 Days) — Ash Gourd ×1, Beetroot ×1, Carrot ×1, Cucumber ×1,Mix Veg ×1, Tomato ×1, Wheatgrass ×1,`,
         ingredients,
         ingredientCost,
         totalBottleCost,
@@ -408,7 +447,9 @@ const DetoxJuices = ({ onBackToDashboard }: DetoxJuicesProps) => {
                   <SelectItem value="ash_gourd">Ash Gourd Juice</SelectItem>
                   <SelectItem value="beetroot">Beetroot Juice</SelectItem>
                   <SelectItem value="carrot">Carrot Juice</SelectItem>
-                  <SelectItem value="mix_veg">Mix Veg Juice</SelectItem>
+                  <SelectItem value="cucumber">Cucumber Juice</SelectItem>
+                  <SelectItem value="mix_veg">Mix Veg Juice</SelectItem>                  
+                  <SelectItem value="tomato">Tomato Juice</SelectItem>                  
                   <SelectItem value="wheatgrass">Wheat Grass Shot</SelectItem>
                 </SelectContent>
               </Select>
