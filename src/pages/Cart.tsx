@@ -148,6 +148,29 @@ const Cart = () => {
       saveRecentOrder(summary);
       clearCart();
       toast.success("Order placed successfully!");
+
+      // Auto-send WhatsApp order confirmation
+      if (whatsappSettings?.enabled && whatsappSettings?.number) {
+        const confirmLines = [
+          "*✅ Order Confirmed!*",
+          "",
+          `*Order ID:* ${order.id.slice(0, 8).toUpperCase()}`,
+          "",
+          ...items.map((item) => `• ${item.name} x ${item.quantity} — ₹${item.price * item.quantity}`),
+          "",
+          `*Total:* ₹${totalPrice.toFixed(2)}`,
+          `*Payment:* ${paymentMethod.toUpperCase()}`,
+          paymentMethod === "upi" && transactionId.trim() ? `*Transaction ID:* ${transactionId.trim()}` : null,
+          "",
+          `*Customer:* ${form.name}`,
+          `*Phone:* ${form.phone}`,
+          form.email.trim() ? `*Email:* ${form.email.trim()}` : null,
+          `*Address:* ${form.address}`,
+        ].filter(Boolean);
+
+        const confirmUrl = buildWhatsAppUrl(whatsappSettings.number, confirmLines as string[]);
+        window.open(confirmUrl, "_blank");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to place order. Please try again.";
       toast.error(message);

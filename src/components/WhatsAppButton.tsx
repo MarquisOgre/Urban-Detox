@@ -13,7 +13,8 @@ const WhatsAppButton = () => {
 
   if (!data?.enabled || !data.number) return null;
 
-  const url = `https://wa.me/${data.number}?text=${encodeURIComponent(data.default_message || "")}`;
+  const sanitizedNumber = data.number.replace(/[^0-9]/g, "");
+  const url = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(data.default_message || "")}`;
 
   return (
     <a
