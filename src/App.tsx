@@ -13,6 +13,7 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import CustomiseJuice from "./pages/CustomiseJuice";
 import Cart from "./pages/Cart";
+import RecentOrders from "./pages/RecentOrders";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import AdminLogin from "./pages/AdminLogin";
