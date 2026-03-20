@@ -433,11 +433,9 @@ const Cart = () => {
                 ) : null}
 
                 {whatsappOrderUrl && (
-                  <a href={whatsappOrderUrl} target="_blank" rel="noopener noreferrer">
-                    <Button type="button" variant="outline" className="w-full">
-                      <MessageCircle className="mr-2 h-4 w-4" /> Order on WhatsApp
-                    </Button>
-                  </a>
+                  <Button type="button" variant="outline" className="w-full" onClick={() => openWhatsAppLink(whatsappOrderUrl)}>
+                    <MessageCircle className="mr-2 h-4 w-4" /> Order on WhatsApp
+                  </Button>
                 )}
               </div>
             )}
