@@ -7,6 +7,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import FaviconManager from "@/components/FaviconManager";
+import CartDrawer from "@/components/CartDrawer";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
