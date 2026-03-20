@@ -64,6 +64,11 @@ const Cart = () => {
     [form.name, form.phone, form.address],
   );
 
+  const sanitizePhone = (phone: string) => phone.replace(/[^0-9]/g, "");
+
+  const buildWhatsAppUrl = (phone: string, lines: string[]) =>
+    `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(lines.join("\n"))}`;
+
   const whatsappOrderUrl = useMemo(() => {
     if (!whatsappSettings?.enabled || !whatsappSettings?.number || items.length === 0 || !detailsFilled) return null;
 
@@ -82,7 +87,7 @@ const Cart = () => {
       `*Address:* ${form.address}`,
     ].filter(Boolean);
 
-    return `https://wa.me/${whatsappSettings.number}?text=${encodeURIComponent(lines.join("\n"))}`;
+    return buildWhatsAppUrl(whatsappSettings.number, lines as string[]);
   }, [whatsappSettings, items, detailsFilled, totalPrice, paymentMethod, transactionId, form]);
 
   const saveRecentOrder = (order: PlacedOrderSummary) => {
