@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PromoBanner from "@/components/PromoBanner";
@@ -11,15 +11,32 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Minus, Plus, Trash2, ShoppingBag, CheckCircle } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, CheckCircle, History, MessageCircle, Home } from "lucide-react";
 import { toast } from "sonner";
 
 type UpiStep = "select" | "qr" | "txn";
 
+type PlacedOrderSummary = {
+  id: string;
+  amount: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  orderStatus: string;
+  customerName: string;
+  createdAt: string;
+};
+
+const badgeClass = (value: string) => {
+  if (value === "pending") return "bg-secondary text-foreground";
+  if (value === "paid" || value === "processing") return "bg-primary/10 text-primary";
+  if (value === "cancelled") return "bg-destructive/10 text-destructive";
+  return "bg-muted text-muted-foreground";
+};
+
 const Cart = () => {
   const { items, updateQuantity, removeItem, clearCart, totalPrice } = useCart();
   const [submitting, setSubmitting] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrderSummary | null>(null);
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -34,10 +51,46 @@ const Cart = () => {
     },
   });
 
+  const { data: whatsappSettings } = useQuery({
+    queryKey: ["settings", "whatsapp"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("setting_value").eq("setting_key", "whatsapp").maybeSingle();
+      return data?.setting_value as { enabled: boolean; number: string } | null;
+    },
+  });
+
   const detailsFilled = useMemo(
     () => form.name.trim() !== "" && form.phone.trim() !== "" && form.address.trim() !== "",
-    [form.name, form.phone, form.address]
+    [form.name, form.phone, form.address],
   );
+
+  const whatsappOrderUrl = useMemo(() => {
+    if (!whatsappSettings?.enabled || !whatsappSettings?.number || items.length === 0 || !detailsFilled) return null;
+
+    const lines = [
+      "*New Juice Order*",
+      "",
+      ...items.map((item) => `• ${item.name} x ${item.quantity} — ₹${item.price * item.quantity}`),
+      "",
+      `*Total:* ₹${totalPrice.toFixed(2)}`,
+      `*Payment:* ${paymentMethod.toUpperCase()}`,
+      paymentMethod === "upi" && transactionId.trim() ? `*Transaction ID:* ${transactionId.trim()}` : null,
+      "",
+      `*Customer:* ${form.name}`,
+      `*Phone:* ${form.phone}`,
+      form.email.trim() ? `*Email:* ${form.email.trim()}` : null,
+      `*Address:* ${form.address}`,
+    ].filter(Boolean);
+
+    return `https://wa.me/${whatsappSettings.number}?text=${encodeURIComponent(lines.join("\n"))}`;
+  }, [whatsappSettings, items, detailsFilled, totalPrice, paymentMethod, transactionId, form]);
+
+  const saveRecentOrder = (order: PlacedOrderSummary) => {
+    const existing = localStorage.getItem("urban-detox-recent-orders");
+    const parsed: PlacedOrderSummary[] = existing ? JSON.parse(existing) : [];
+    const next = [order, ...parsed].slice(0, 10);
+    localStorage.setItem("urban-detox-recent-orders", JSON.stringify(next));
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +99,7 @@ const Cart = () => {
       toast.error("Please enter your UPI Transaction ID.");
       return;
     }
+
     setSubmitting(true);
     try {
       const { data: order, error: orderError } = await supabase
@@ -58,7 +112,7 @@ const Cart = () => {
           total: totalPrice,
           payment_method: paymentMethod,
           transaction_id: paymentMethod === "upi" ? transactionId.trim() : null,
-        } as any)
+        } as never)
         .select()
         .single();
 
@@ -72,40 +126,68 @@ const Cart = () => {
         price: item.price,
       }));
 
-      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems as never[]);
       if (itemsError) throw itemsError;
 
-      setOrderId(order.id);
+      const summary: PlacedOrderSummary = {
+        id: order.id,
+        amount: Number(order.total),
+        paymentMethod: paymentMethod,
+        paymentStatus: paymentMethod === "upi" ? "pending" : "pending",
+        orderStatus: String(order.status || "pending"),
+        customerName: form.name,
+        createdAt: order.created_at,
+      };
+
+      setPlacedOrder(summary);
+      saveRecentOrder(summary);
       clearCart();
       toast.success("Order placed successfully!");
-    } catch {
-      toast.error("Failed to place order. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to place order. Please try again.";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (orderId) {
+  if (placedOrder) {
     return (
       <div className="min-h-screen bg-background pb-14">
         <PromoBanner />
         <Navbar />
-        <main className="container mx-auto flex flex-col items-center justify-center px-4 py-20 text-center">
-          <div className="mx-auto max-w-md">
+        <main className="container mx-auto flex justify-center px-4 py-16">
+          <Card className="w-full max-w-lg p-8 text-center shadow-lg">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <ShoppingBag className="h-10 w-10 text-primary" />
+              <CheckCircle className="h-10 w-10 text-primary" />
             </div>
-            <h1 className="mt-6 font-display text-3xl font-bold text-foreground">Order Confirmed!</h1>
-            <p className="mt-2 text-muted-foreground">
-              Your order ID is <span className="font-mono font-semibold text-foreground">{orderId.slice(0, 8)}</span>
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              We'll contact you on your phone number to confirm delivery.
-            </p>
-            <Button onClick={() => navigate("/products")} className="mt-6 bg-nature-gradient text-primary-foreground">
-              Continue Shopping
-            </Button>
-          </div>
+            <h1 className="mt-6 font-display text-4xl font-bold text-foreground">Thank You!</h1>
+            <p className="mt-3 text-lg text-muted-foreground">Your order has been placed successfully.</p>
+            <p className="text-muted-foreground">Payment verification is pending.</p>
+
+            <div className="mt-6 rounded-2xl bg-secondary p-5 text-left">
+              <div className="space-y-2 text-sm text-foreground">
+                <p><span className="text-muted-foreground">Order ID:</span> <span className="font-mono">{placedOrder.id.slice(0, 8).toUpperCase()}</span></p>
+                <p><span className="text-muted-foreground">Amount:</span> ₹{placedOrder.amount}</p>
+                <p className="flex items-center gap-2"><span className="text-muted-foreground">Payment:</span> <span className={`rounded-full px-3 py-1 text-xs font-medium ${badgeClass(placedOrder.paymentStatus)}`}>{placedOrder.paymentStatus}</span></p>
+                <p className="flex items-center gap-2"><span className="text-muted-foreground">Order:</span> <span className={`rounded-full px-3 py-1 text-xs font-medium ${badgeClass(placedOrder.orderStatus)}`}>{placedOrder.orderStatus}</span></p>
+                <p><span className="text-muted-foreground">Name:</span> {placedOrder.customerName}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <Link to="/recent-orders">
+                <Button variant="outline" size="lg" className="w-full">
+                  <History className="mr-2 h-4 w-4" /> Recent Orders
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button size="lg" className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
+                  <Home className="mr-2 h-4 w-4" /> Back to Home
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </main>
         <Footer />
       </div>
@@ -118,9 +200,16 @@ const Cart = () => {
         <PromoBanner />
         <Navbar />
         <main className="container mx-auto px-4 py-8">
-          <h1 className="font-display text-3xl font-bold text-foreground">
-            Your <span className="text-gradient-nature">Cart</span>
-          </h1>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="font-display text-3xl font-bold text-foreground">
+              Your <span className="text-gradient-nature">Cart</span>
+            </h1>
+            <Link to="/recent-orders">
+              <Button variant="outline" size="icon" aria-label="Recent Orders">
+                <History className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
           <div className="mt-12 text-center">
             <ShoppingBag className="mx-auto h-16 w-16 text-muted-foreground/50" />
             <p className="mt-4 text-muted-foreground">Your cart is empty</p>
@@ -139,22 +228,28 @@ const Cart = () => {
       <PromoBanner />
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          <span className="text-gradient-nature">Checkout</span>
-        </h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="font-display text-3xl font-bold text-foreground">
+            <span className="text-gradient-nature">Checkout</span>
+          </h1>
+          <Link to="/recent-orders">
+            <Button variant="outline" size="icon" aria-label="Recent Orders">
+              <History className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
 
         <form onSubmit={handleCheckout} className="mt-8 grid gap-6 lg:grid-cols-3">
-          {/* Order Summary */}
           <Card className="p-6">
             <h3 className="font-display text-lg font-bold text-foreground">Order Summary</h3>
             <div className="mt-4 space-y-3">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <img src={item.image_url || "/placeholder.svg"} alt={item.name} className="h-10 w-10 rounded object-cover shrink-0" />
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <img src={item.image_url || "/placeholder.svg"} alt={item.name} className="h-10 w-10 shrink-0 rounded object-cover" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                      <div className="flex items-center gap-1 mt-1">
+                      <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+                      <div className="mt-1 flex items-center gap-1">
                         <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -162,13 +257,13 @@ const Cart = () => {
                         <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                           <Plus className="h-3 w-3" />
                         </Button>
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={() => removeItem(item.id)}>
+                        <Button type="button" variant="ghost" size="icon" className="ml-1 h-6 w-6" onClick={() => removeItem(item.id)}>
                           <Trash2 className="h-3 w-3 text-destructive" />
                         </Button>
                       </div>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-foreground shrink-0">₹{item.price * item.quantity}</span>
+                  <span className="shrink-0 text-sm font-semibold text-foreground">₹{item.price * item.quantity}</span>
                 </div>
               ))}
             </div>
@@ -180,7 +275,6 @@ const Cart = () => {
             </div>
           </Card>
 
-          {/* Your Details */}
           <Card className="p-6">
             <h3 className="font-display text-lg font-bold text-foreground">Your Details</h3>
             <div className="mt-4 space-y-4">
@@ -203,7 +297,6 @@ const Cart = () => {
             </div>
           </Card>
 
-          {/* Payment */}
           <Card className="p-6">
             <h3 className="font-display text-lg font-bold text-foreground">Payment</h3>
             {!detailsFilled ? (
@@ -212,7 +305,6 @@ const Cart = () => {
               </div>
             ) : (
               <div className="mt-4 space-y-4">
-                {/* COD */}
                 {paymentSettings?.cod_enabled !== false && (
                   <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
                     <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => { setPaymentMethod("cod"); setUpiStep("select"); }} className="accent-primary" />
@@ -223,7 +315,6 @@ const Cart = () => {
                   </label>
                 )}
 
-                {/* UPI */}
                 {paymentSettings?.upi_enabled && (
                   <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "upi" ? "border-primary bg-primary/5" : "border-border"}`}>
                     <input type="radio" name="payment" value="upi" checked={paymentMethod === "upi"} onChange={() => { setPaymentMethod("upi"); setUpiStep("qr"); }} className="accent-primary" />
@@ -234,61 +325,51 @@ const Cart = () => {
                   </label>
                 )}
 
-                {/* UPI Flow Steps */}
                 {paymentMethod === "upi" && paymentSettings?.upi_enabled && (
                   <div className="space-y-4">
-                    {/* Step 1: QR Code */}
                     {upiStep === "qr" && (
-                      <div className="rounded-lg border border-border p-4 text-center space-y-3">
+                      <div className="space-y-3 rounded-lg border border-border p-4 text-center">
                         <p className="text-sm font-medium text-foreground">Scan QR Code to Pay ₹{totalPrice.toFixed(2)}</p>
                         {paymentSettings.qr_code_url && (
                           <img src={paymentSettings.qr_code_url} alt="UPI QR Code" className="mx-auto h-52 w-52 rounded-lg object-contain" />
                         )}
                         <p className="text-xs text-muted-foreground">UPI ID: {paymentSettings.upi_id}</p>
-                        <Button
-                          type="button"
-                          onClick={() => setUpiStep("txn")}
-                          className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
-                        >
+                        <Button type="button" onClick={() => setUpiStep("txn")} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
                           <CheckCircle className="mr-2 h-4 w-4" /> I've Made the Payment
                         </Button>
                       </div>
                     )}
 
-                    {/* Step 2: Transaction ID */}
                     {upiStep === "txn" && (
-                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                      <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
                         <p className="text-sm font-medium text-foreground">Enter UPI Transaction ID</p>
                         <p className="text-xs text-muted-foreground">Please enter the transaction/reference ID from your UPI app to confirm payment.</p>
-                        <Input
-                          placeholder="e.g. 412345678901"
-                          value={transactionId}
-                          onChange={(e) => setTransactionId(e.target.value)}
-                        />
+                        <Input placeholder="e.g. 412345678901" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
                         <div className="flex gap-2">
-                          <Button type="button" variant="outline" size="sm" onClick={() => setUpiStep("qr")}>
-                            Back
-                          </Button>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setUpiStep("qr")}>Back</Button>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Place Order button */}
                 {paymentMethod === "cod" ? (
                   <Button type="submit" disabled={submitting} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
                     {submitting ? "Placing Order..." : "Place Order"}
                   </Button>
                 ) : upiStep === "txn" ? (
-                  <Button
-                    type="submit"
-                    disabled={submitting || !transactionId.trim()}
-                    className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
-                  >
+                  <Button type="submit" disabled={submitting || !transactionId.trim()} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
                     {submitting ? "Placing Order..." : "Place Order"}
                   </Button>
                 ) : null}
+
+                {whatsappOrderUrl && (
+                  <a href={whatsappOrderUrl} target="_blank" rel="noopener noreferrer">
+                    <Button type="button" variant="outline" className="w-full">
+                      <MessageCircle className="mr-2 h-4 w-4" /> Order on WhatsApp
+                    </Button>
+                  </a>
+                )}
               </div>
             )}
           </Card>
