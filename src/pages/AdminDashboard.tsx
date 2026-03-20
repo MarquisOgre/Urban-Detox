@@ -136,13 +136,23 @@ const AdminDashboard = () => {
       if (url) imageUrl = url;
     }
 
-    // Upload additional images
-    const uploadedAdditional: string[] = [];
-    for (const file of additionalImages) {
+    // Upload new images
+    const uploadedNew: string[] = [];
+    for (const file of newImages) {
       const url = await uploadImage(file, "products");
-      if (url) uploadedAdditional.push(url);
+      if (url) uploadedNew.push(url);
     }
-    const allImages = [...productForm.images, ...uploadedAdditional];
+
+    // First uploaded image becomes main if no main image set
+    let imageUrl = productForm.image_url;
+    if (productImage) {
+      const url = await uploadImage(productImage, "products");
+      if (url) imageUrl = url;
+    } else if (!imageUrl && uploadedNew.length > 0) {
+      imageUrl = uploadedNew.shift()!;
+    }
+
+    const allImages = [...productForm.images, ...uploadedNew];
 
     const planOptions = productForm.plans.map((pl) => ({
       key: pl.key, label: pl.label, subLabel: pl.subLabel,
