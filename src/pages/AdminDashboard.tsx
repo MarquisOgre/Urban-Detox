@@ -652,38 +652,59 @@ const AdminDashboard = () => {
               <Textarea placeholder="e.g. Boosts immunity, aids digestion, detoxifies liver" value={productForm.health_benefits} onChange={(e) => setProductForm({ ...productForm, health_benefits: e.target.value })} className="mt-1" rows={2} />
             </div>
             <div>
-              <Label>Main Product Image</Label>
-              {productForm.image_url && (
-                <img src={productForm.image_url} alt="" className="mt-1 h-20 w-20 rounded object-cover" />
+              <Label>Product Images</Label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {/* Main image thumbnail */}
+                {productForm.image_url && (
+                  <div className="relative group">
+                    <img src={productForm.image_url} alt="" className="h-20 w-20 rounded-lg object-cover border-2 border-primary" />
+                    <span className="absolute bottom-0 left-0 right-0 bg-primary/80 text-primary-foreground text-[9px] text-center py-0.5 rounded-b-lg">Main</span>
+                    <button
+                      type="button"
+                      onClick={() => setProductForm({ ...productForm, image_url: "" })}
+                      className="absolute -right-1 -top-1 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {/* Additional image thumbnails */}
+                {productForm.images.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={img} alt="" className="h-20 w-20 rounded-lg object-cover border border-border" />
+                    <button
+                      type="button"
+                      onClick={() => setProductForm({ ...productForm, images: productForm.images.filter((_, i) => i !== idx) })}
+                      className="absolute -right-1 -top-1 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {/* Add image button */}
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Plus className="h-6 w-6" />
+                </button>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setNewImages((prev) => [...prev, ...files]);
+                    if (e.target) e.target.value = "";
+                  }}
+                />
+              </div>
+              {newImages.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">{newImages.length} new image(s) will be uploaded on save.</p>
               )}
-              <Input type="file" accept="image/*" onChange={(e) => setProductImage(e.target.files?.[0] || null)} className="mt-1" />
-            </div>
-            <div>
-              <Label>Additional Images</Label>
-              {productForm.images.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {productForm.images.map((img, idx) => (
-                    <div key={idx} className="relative group">
-                      <img src={img} alt="" className="h-16 w-16 rounded object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setProductForm({ ...productForm, images: productForm.images.filter((_, i) => i !== idx) })}
-                        className="absolute -right-1 -top-1 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setAdditionalImages(Array.from(e.target.files || []))}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Select multiple images to upload as gallery photos.</p>
             </div>
 
             {/* Plan Options */}
