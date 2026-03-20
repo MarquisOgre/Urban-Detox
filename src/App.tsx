@@ -13,6 +13,7 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import CustomiseJuice from "./pages/CustomiseJuice";
 import Cart from "./pages/Cart";
+import RecentOrders from "./pages/RecentOrders";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import AdminLogin from "./pages/AdminLogin";
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/products/:slug" element={<ProductDetail />} />
               <Route path="/customise" element={<CustomiseJuice />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/recent-orders" element={<RecentOrders />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin/login" element={<AdminLogin />} />
