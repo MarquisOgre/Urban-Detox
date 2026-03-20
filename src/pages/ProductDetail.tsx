@@ -77,7 +77,7 @@ const ProductDetail = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 md:items-start">
+          <div className="grid gap-8 md:grid-cols-[3fr_2fr] md:items-start">
             {/* Image gallery: thumbnails on left, main image on right */}
             <div className="flex gap-3">
               {/* Thumbnails column */}

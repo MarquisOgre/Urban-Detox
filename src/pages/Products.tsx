@@ -8,8 +8,9 @@ import { Card } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { getCartProductId } from "@/lib/catalog";
+import { getCartProductId, type CatalogProduct, type CatalogPlan } from "@/lib/catalog";
 import { useCatalogProducts } from "@/hooks/useCatalogProducts";
+import PlanSelectorDialog from "@/components/PlanSelectorDialog";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,10 @@ const Products = () => {
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
   const { addItem } = useCart();
   const { data: products = [], isLoading, error } = useCatalogProducts();
+
+  // Plan selector state
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [planDialogProduct, setPlanDialogProduct] = useState<CatalogProduct | null>(null);
 
   useEffect(() => {
     const category = searchParams.get("category");
@@ -39,21 +44,22 @@ const Products = () => {
       });
   }, [products, selectedCategory, sortBy]);
 
-  const handleAddToCart = (e: React.MouseEvent, product: (typeof products)[number]) => {
+  const handleAddToCart = (e: React.MouseEvent, product: CatalogProduct) => {
     e.preventDefault();
     e.stopPropagation();
+    setPlanDialogProduct(product);
+    setPlanDialogOpen(true);
+  };
 
-    const defaultPlan = product.plans[0];
-    const labelSuffix = defaultPlan ? ` (${defaultPlan.label})` : "";
-
+  const handleSelectPlan = (product: CatalogProduct, plan: CatalogPlan) => {
     addItem({
-      id: getCartProductId(product.id, defaultPlan?.key),
-      name: `${product.name}${labelSuffix}`,
-      price: defaultPlan?.price ?? product.price,
+      id: getCartProductId(product.id, plan.key),
+      name: `${product.name} (${plan.label})`,
+      price: plan.price,
       image_url: product.image_url,
     });
-
-    toast.success(`${product.name}${labelSuffix} added to cart!`);
+    toast.success(`${product.name} (${plan.label}) added to cart!`);
+    setPlanDialogOpen(false);
   };
 
   return (
@@ -67,43 +73,12 @@ const Products = () => {
               Our <span className="text-gradient-nature">Juices</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">Fresh, cold-pressed & delivered</p>
-            {/* <Link to="/customise">
-              <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
-                <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
-              </Button>
-            </Link> */}
           </div>
           <Link to="/customise">
-              <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
-                <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
-              </Button>
-            </Link>
-
-          {/* <div className="flex flex-wrap justify-center gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category ? "bg-nature-gradient text-primary-foreground" : ""}
-              >
-                {category}
-              </Button>
-            ))}
-          </div> */}
-
-          {/* <div className="shrink-0">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
-          </div> */}
+            <Button variant="outline" size="sm" className="mt-2 border-primary text-primary hover:bg-primary/10">
+              <Sparkles className="mr-1 h-3.5 w-3.5" /> Customise Your Juice
+            </Button>
+          </Link>
         </div>
 
         {isLoading ? (
@@ -153,6 +128,13 @@ const Products = () => {
         )}
       </main>
       <Footer />
+
+      <PlanSelectorDialog
+        open={planDialogOpen}
+        onOpenChange={setPlanDialogOpen}
+        product={planDialogProduct}
+        onSelectPlan={handleSelectPlan}
+      />
     </div>
   );
 };
