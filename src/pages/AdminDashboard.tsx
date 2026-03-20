@@ -96,7 +96,8 @@ const AdminDashboard = () => {
     ] as { key: string; label: string; subLabel: string; price: string; badge: string }[],
   });
   const [productImage, setProductImage] = useState<File | null>(null);
-  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const defaultPlans = [
     { key: "reset", label: "Urban Reset", subLabel: "1 Day Detox", price: "79", badge: "" },
