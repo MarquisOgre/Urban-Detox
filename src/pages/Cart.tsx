@@ -66,8 +66,39 @@ const Cart = () => {
 
   const sanitizePhone = (phone: string) => phone.replace(/[^0-9]/g, "");
 
-  const buildWhatsAppUrl = (phone: string, lines: string[]) =>
-    `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(lines.join("\n"))}`;
+  const buildWhatsAppUrl = (phone: string, lines: string[]) => {
+    const sanitizedPhone = sanitizePhone(phone);
+    const encodedText = encodeURIComponent(lines.join("\n"));
+    const isDesktopViewport = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
+    return isDesktopViewport
+      ? `https://web.whatsapp.com/send?phone=${sanitizedPhone}&text=${encodedText}`
+      : `https://wa.me/${sanitizedPhone}?text=${encodedText}`;
+  };
+
+  const openWhatsAppLink = (url: string, targetWindow?: Window | null) => {
+    if (targetWindow && !targetWindow.closed) {
+      targetWindow.location.replace(url);
+      return;
+    }
+
+    const popup = window.open(url, "_blank");
+    if (popup) {
+      popup.opener = null;
+      return;
+    }
+
+    try {
+      if (window.top && window.top !== window) {
+        window.top.location.href = url;
+        return;
+      }
+    } catch {
+      // Ignore cross-origin access issues and fall back to current window.
+    }
+
+    window.location.href = url;
+  };
 
   const whatsappOrderUrl = useMemo(() => {
     if (!whatsappSettings?.enabled || !whatsappSettings?.number || items.length === 0 || !detailsFilled) return null;
@@ -81,10 +112,10 @@ const Cart = () => {
       `*Payment:* ${paymentMethod.toUpperCase()}`,
       paymentMethod === "upi" && transactionId.trim() ? `*Transaction ID:* ${transactionId.trim()}` : null,
       "",
-      `*Customer:* ${form.name}`,
-      `*Phone:* ${form.phone}`,
+      `*Customer:* ${form.name.trim()}`,
+      `*Phone:* ${form.phone.trim()}`,
       form.email.trim() ? `*Email:* ${form.email.trim()}` : null,
-      `*Address:* ${form.address}`,
+      `*Address:* ${form.address.trim()}`,
     ].filter(Boolean);
 
     return buildWhatsAppUrl(whatsappSettings.number, lines as string[]);
@@ -105,26 +136,32 @@ const Cart = () => {
       return;
     }
 
+    const orderId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const confirmationWindow = whatsappSettings?.enabled && whatsappSettings?.number ? window.open("", "_blank") : null;
+
+    if (confirmationWindow) {
+      confirmationWindow.opener = null;
+    }
+
     setSubmitting(true);
     try {
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_name: form.name,
-          user_email: form.email || null,
-          user_phone: form.phone,
-          address: form.address,
-          total: totalPrice,
-          payment_method: paymentMethod,
-          transaction_id: paymentMethod === "upi" ? transactionId.trim() : null,
-        } as never)
-        .select()
-        .single();
+      const { error: orderError } = await supabase.from("orders").insert({
+        id: orderId,
+        created_at: createdAt,
+        user_name: form.name.trim(),
+        user_email: form.email.trim() || null,
+        user_phone: form.phone.trim(),
+        address: form.address.trim(),
+        total: totalPrice,
+        payment_method: paymentMethod,
+        transaction_id: paymentMethod === "upi" ? transactionId.trim() : null,
+      } as never);
 
       if (orderError) throw orderError;
 
       const orderItems = items.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.id,
         product_name: item.name,
         quantity: item.quantity,
@@ -135,13 +172,13 @@ const Cart = () => {
       if (itemsError) throw itemsError;
 
       const summary: PlacedOrderSummary = {
-        id: order.id,
-        amount: Number(order.total),
+        id: orderId,
+        amount: totalPrice,
         paymentMethod: paymentMethod,
-        paymentStatus: paymentMethod === "upi" ? "pending" : "pending",
-        orderStatus: String(order.status || "pending"),
-        customerName: form.name,
-        createdAt: order.created_at,
+        paymentStatus: "pending",
+        orderStatus: "pending",
+        customerName: form.name.trim(),
+        createdAt,
       };
 
       setPlacedOrder(summary);
@@ -149,12 +186,11 @@ const Cart = () => {
       clearCart();
       toast.success("Order placed successfully!");
 
-      // Auto-send WhatsApp order confirmation
       if (whatsappSettings?.enabled && whatsappSettings?.number) {
         const confirmLines = [
           "*✅ Order Confirmed!*",
           "",
-          `*Order ID:* ${order.id.slice(0, 8).toUpperCase()}`,
+          `*Order ID:* ${orderId.slice(0, 8).toUpperCase()}`,
           "",
           ...items.map((item) => `• ${item.name} x ${item.quantity} — ₹${item.price * item.quantity}`),
           "",
@@ -162,16 +198,21 @@ const Cart = () => {
           `*Payment:* ${paymentMethod.toUpperCase()}`,
           paymentMethod === "upi" && transactionId.trim() ? `*Transaction ID:* ${transactionId.trim()}` : null,
           "",
-          `*Customer:* ${form.name}`,
-          `*Phone:* ${form.phone}`,
+          `*Customer:* ${form.name.trim()}`,
+          `*Phone:* ${form.phone.trim()}`,
           form.email.trim() ? `*Email:* ${form.email.trim()}` : null,
-          `*Address:* ${form.address}`,
+          `*Address:* ${form.address.trim()}`,
         ].filter(Boolean);
 
-        const confirmUrl = buildWhatsAppUrl(whatsappSettings.number, confirmLines as string[]);
-        window.open(confirmUrl, "_blank");
+        openWhatsAppLink(buildWhatsAppUrl(whatsappSettings.number, confirmLines as string[]), confirmationWindow);
+      } else if (confirmationWindow && !confirmationWindow.closed) {
+        confirmationWindow.close();
       }
     } catch (error) {
+      if (confirmationWindow && !confirmationWindow.closed) {
+        confirmationWindow.close();
+      }
+
       const message = error instanceof Error ? error.message : "Failed to place order. Please try again.";
       toast.error(message);
     } finally {
