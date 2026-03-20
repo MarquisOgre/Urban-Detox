@@ -130,12 +130,6 @@ const AdminDashboard = () => {
   };
 
   const saveProduct = async () => {
-    let imageUrl = productForm.image_url;
-    if (productImage) {
-      const url = await uploadImage(productImage, "products");
-      if (url) imageUrl = url;
-    }
-
     // Upload new images
     const uploadedNew: string[] = [];
     for (const file of newImages) {
