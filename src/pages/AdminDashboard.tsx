@@ -125,7 +125,7 @@ const AdminDashboard = () => {
       slug: p.slug || "", is_active: p.is_active, image_url: p.image_url || "", images: existingImages, plans: existingPlans,
     });
     setProductImage(null);
-    setAdditionalImages([]);
+    setNewImages([]);
     setProductDialog(true);
   };
 
