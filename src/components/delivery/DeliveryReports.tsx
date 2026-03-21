@@ -117,7 +117,7 @@ const DeliveryReports = () => {
             <div key={juice} className="flex items-center gap-3">
               <span className="text-sm text-foreground w-28">{juice}</span>
               <div className="flex-1 bg-secondary rounded-full h-4 overflow-hidden">
-                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${(count / delivered) * 100}%` }} />
+                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${deliveredQty > 0 ? (count / deliveredQty) * 100 : 0}%` }} />
               </div>
               <span className="text-xs text-muted-foreground w-8 text-right">{count}</span>
             </div>
