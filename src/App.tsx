@@ -19,6 +19,7 @@ import Contact from "./pages/Contact";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
+import DeliveryTracker from "./pages/DeliveryTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
