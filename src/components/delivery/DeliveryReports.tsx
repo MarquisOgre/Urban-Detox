@@ -38,13 +38,16 @@ const DeliveryReports = () => {
   const delivered = filtered.filter((d) => d.status === "delivered").length;
   const pending = filtered.filter((d) => d.status === "pending").length;
   const skipped = filtered.filter((d) => d.status === "skipped").length;
-  const onHold = filtered.filter((d) => d.status === "on_hold").length;
+  const missed = filtered.filter((d) => d.status === "missed").length;
+  const totalQty = filtered.reduce((sum, d) => sum + ((d as any).quantity || 1), 0);
 
   // Juice breakdown
   const juiceBreakdown: Record<string, number> = {};
   filtered.filter((d) => d.status === "delivered").forEach((d) => {
-    juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + 1;
+    const qty = (d as any).quantity || 1;
+    juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + qty;
   });
+  const deliveredQty = Object.values(juiceBreakdown).reduce((s, v) => s + v, 0);
 
   // Customer stats
   const customerStats = customers.map((c) => {
