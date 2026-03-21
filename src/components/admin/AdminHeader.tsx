@@ -11,7 +11,7 @@ const AdminHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const title = location.pathname === "/admin/settings" ? "Settings" : "Admin Dashboard";
+  const title = location.pathname.includes("/admin/deliveries") ? "Delivery Tracker" : location.pathname === "/admin/settings" ? "Settings" : "Admin Dashboard";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
