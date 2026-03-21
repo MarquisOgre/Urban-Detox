@@ -35,6 +35,9 @@ const AdminHeader = () => {
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
           <Button variant="ghost" size="icon" asChild>
+            <Link to="/admin/deliveries"><Truck className="h-5 w-5" /></Link>
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
             <Link to="/admin/settings"><Settings className="h-5 w-5" /></Link>
           </Button>
           <Button variant="ghost" size="sm" onClick={handleLogout} className="flex items-center gap-1">
