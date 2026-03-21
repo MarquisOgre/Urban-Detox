@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const JUICE_TYPES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mix Veg", "Tomato", "Wheatgrass"];
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300", icon: Clock },
   delivered: { label: "Delivered", color: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300", icon: CheckCircle },
   skipped: { label: "Skipped", color: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300", icon: SkipForward },
   on_hold: { label: "On Hold", color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300", icon: Pause },
+  missed: { label: "Missed", color: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300", icon: AlertTriangle },
 };
 
 const DailyDeliveryTracker = () => {
@@ -72,6 +72,7 @@ const DailyDeliveryTracker = () => {
         customer_id: c.id,
         delivery_date: dateStr,
         juice_type: getJuiceForCustomer(c.id),
+        quantity: 1,
         status: "pending" as const,
       }));
 
@@ -86,11 +87,44 @@ const DailyDeliveryTracker = () => {
     refetch();
   };
 
+  // Auto-skip: mark all pending as "missed" for past dates
+  const autoSkipMissed = async () => {
+    const now = new Date();
+    const cutoffHour = 20; // 8 PM cutoff
+    const isToday = dateStr === format(now, "yyyy-MM-dd");
+    const isPast = selectedDate < new Date(format(now, "yyyy-MM-dd"));
+    
+    if (!isPast && !(isToday && now.getHours() >= cutoffHour)) {
+      toast.info("Auto-skip only works for past dates or after 8 PM today");
+      return;
+    }
+
+    const pendingIds = deliveries.filter((d) => d.status === "pending").map((d) => d.id);
+    if (pendingIds.length === 0) {
+      toast.info("No pending deliveries to mark as missed");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("deliveries")
+      .update({ status: "missed", updated_at: new Date().toISOString() })
+      .in("id", pendingIds);
+    if (error) { toast.error("Failed to auto-skip"); return; }
+    toast.success(`${pendingIds.length} deliveries marked as missed`);
+    refetch();
+  };
+
   const updateStatus = async (deliveryId: string, status: string) => {
     const { error } = await supabase.from("deliveries").update({ status, updated_at: new Date().toISOString() }).eq("id", deliveryId);
     if (error) { toast.error("Failed to update"); return; }
     refetch();
     queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
+  const updateQuantity = async (deliveryId: string, quantity: number) => {
+    if (quantity < 1) return;
+    await supabase.from("deliveries").update({ quantity }).eq("id", deliveryId);
+    refetch();
   };
 
   const updateNote = async (deliveryId: string, notes: string) => {
@@ -100,13 +134,15 @@ const DailyDeliveryTracker = () => {
   const delivered = deliveries.filter((d) => d.status === "delivered").length;
   const pending = deliveries.filter((d) => d.status === "pending").length;
   const skipped = deliveries.filter((d) => d.status === "skipped").length;
+  const missed = deliveries.filter((d) => d.status === "missed").length;
+  const totalQty = deliveries.reduce((sum, d) => sum + ((d as any).quantity || 1), 0);
 
   const exportCSV = () => {
     const rows = deliveries.map((d) => {
       const c = customers.find((cu) => cu.id === d.customer_id);
-      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.status},${d.notes || ""}`;
+      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${(d as any).quantity || 1},${d.status},${d.notes || ""}`;
     });
-    const csv = `Name,Villa,Juice,Status,Notes\n${rows.join("\n")}`;
+    const csv = `Name,Villa,Juice,Qty,Status,Notes\n${rows.join("\n")}`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -114,8 +150,6 @@ const DailyDeliveryTracker = () => {
     URL.revokeObjectURL(url);
     toast.success("Exported!");
   };
-
-  const printSheet = () => window.print();
 
   return (
     <div className="space-y-4">
@@ -138,15 +172,20 @@ const DailyDeliveryTracker = () => {
             <Button size="sm" onClick={generateDeliveries} className="bg-primary text-primary-foreground">
               <RefreshCw className="h-3 w-3 mr-1" /> Generate
             </Button>
+            <Button size="sm" variant="destructive" onClick={autoSkipMissed}>
+              <AlertTriangle className="h-3 w-3 mr-1" /> Auto-Skip
+            </Button>
             <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-3 w-3 mr-1" /> CSV</Button>
-            <Button variant="outline" size="sm" onClick={printSheet}><Printer className="h-3 w-3 mr-1" /> Print</Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="h-3 w-3 mr-1" /> Print</Button>
           </div>
         </div>
-        <div className="flex gap-4 mt-3 text-sm">
-          <span className="text-muted-foreground">Total: <strong className="text-foreground">{deliveries.length}</strong></span>
+        <div className="flex gap-4 mt-3 text-sm flex-wrap">
+          <span className="text-muted-foreground">Entries: <strong className="text-foreground">{deliveries.length}</strong></span>
+          <span className="text-muted-foreground">Juices: <strong className="text-foreground">{totalQty}</strong></span>
           <span className="text-green-600">✓ {delivered}</span>
           <span className="text-yellow-600">⏳ {pending}</span>
           <span className="text-red-500">⏭ {skipped}</span>
+          {missed > 0 && <span className="text-orange-500">⚠ {missed} missed</span>}
         </div>
       </Card>
 
@@ -167,6 +206,7 @@ const DailyDeliveryTracker = () => {
             const customer = customers.find((c) => c.id === d.customer_id);
             const sc = statusConfig[d.status] || statusConfig.pending;
             const Icon = sc.icon;
+            const qty = (d as any).quantity || 1;
             return (
               <Card key={d.id} className={`p-3 transition-all ${d.status === "delivered" ? "opacity-70" : ""}`}>
                 <div className="flex items-start justify-between gap-2">
@@ -178,11 +218,18 @@ const DailyDeliveryTracker = () => {
                         <Icon className="h-3 w-3 mr-1" /> {sc.label}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">🥤 {d.juice_type}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <p className="text-xs text-muted-foreground">🥤 {d.juice_type}</p>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, qty - 1)}>-</Button>
+                        <span className="text-xs font-bold text-foreground w-4 text-center">{qty}</span>
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, qty + 1)}>+</Button>
+                      </div>
+                    </div>
                     {d.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">📝 {d.notes}</p>}
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    {(["delivered", "pending", "skipped", "on_hold"] as const).map((s) => {
+                    {(["delivered", "pending", "skipped", "on_hold", "missed"] as const).map((s) => {
                       const cfg = statusConfig[s];
                       const SIcon = cfg.icon;
                       return (

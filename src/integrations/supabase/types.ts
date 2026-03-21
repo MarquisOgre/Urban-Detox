@@ -49,6 +49,7 @@ export type Database = {
           id: string
           juice_type: string
           notes: string | null
+          quantity: number
           status: string
           updated_at: string | null
         }
@@ -59,6 +60,7 @@ export type Database = {
           id?: string
           juice_type: string
           notes?: string | null
+          quantity?: number
           status?: string
           updated_at?: string | null
         }
@@ -69,6 +71,7 @@ export type Database = {
           id?: string
           juice_type?: string
           notes?: string | null
+          quantity?: number
           status?: string
           updated_at?: string | null
         }

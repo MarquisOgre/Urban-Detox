@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Truck, Users, CalendarCheck, CreditCard, BarChart3, RotateCcw } from "lucide-react";
+import { Truck, Users, CalendarCheck, CreditCard, BarChart3, RotateCcw, Package } from "lucide-react";
 import DeliveryDashboard from "@/components/delivery/DeliveryDashboard";
 import DailyDeliveryTracker from "@/components/delivery/DailyDeliveryTracker";
 import CustomerManagement from "@/components/delivery/CustomerManagement";
 import PaymentTracking from "@/components/delivery/PaymentTracking";
 import DeliveryReports from "@/components/delivery/DeliveryReports";
 import RotationPlanner from "@/components/delivery/RotationPlanner";
+import InventoryEstimation from "@/components/delivery/InventoryEstimation";
 
 const DeliveryTracker = () => {
   const navigate = useNavigate();
@@ -54,6 +55,9 @@ const DeliveryTracker = () => {
             <TabsTrigger value="payments" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
               <CreditCard className="h-4 w-4" /> Payments
             </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
+              <Package className="h-4 w-4" /> Inventory
+            </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
               <BarChart3 className="h-4 w-4" /> Reports
             </TabsTrigger>
@@ -66,6 +70,7 @@ const DeliveryTracker = () => {
           <TabsContent value="daily"><DailyDeliveryTracker /></TabsContent>
           <TabsContent value="customers"><CustomerManagement /></TabsContent>
           <TabsContent value="payments"><PaymentTracking /></TabsContent>
+          <TabsContent value="inventory"><InventoryEstimation /></TabsContent>
           <TabsContent value="reports"><DeliveryReports /></TabsContent>
           <TabsContent value="rotation"><RotationPlanner /></TabsContent>
         </Tabs>

@@ -38,13 +38,16 @@ const DeliveryReports = () => {
   const delivered = filtered.filter((d) => d.status === "delivered").length;
   const pending = filtered.filter((d) => d.status === "pending").length;
   const skipped = filtered.filter((d) => d.status === "skipped").length;
-  const onHold = filtered.filter((d) => d.status === "on_hold").length;
+  const missed = filtered.filter((d) => d.status === "missed").length;
+  const totalQty = filtered.reduce((sum, d) => sum + ((d as any).quantity || 1), 0);
 
   // Juice breakdown
   const juiceBreakdown: Record<string, number> = {};
   filtered.filter((d) => d.status === "delivered").forEach((d) => {
-    juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + 1;
+    const qty = (d as any).quantity || 1;
+    juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + qty;
   });
+  const deliveredQty = Object.values(juiceBreakdown).reduce((s, v) => s + v, 0);
 
   // Customer stats
   const customerStats = customers.map((c) => {
@@ -114,7 +117,7 @@ const DeliveryReports = () => {
             <div key={juice} className="flex items-center gap-3">
               <span className="text-sm text-foreground w-28">{juice}</span>
               <div className="flex-1 bg-secondary rounded-full h-4 overflow-hidden">
-                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${(count / delivered) * 100}%` }} />
+                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${deliveredQty > 0 ? (count / deliveredQty) * 100 : 0}%` }} />
               </div>
               <span className="text-xs text-muted-foreground w-8 text-right">{count}</span>
             </div>
