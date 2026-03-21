@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { Sun, Moon } from "lucide-react";
@@ -11,7 +11,7 @@ const AdminHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const title = location.pathname === "/admin/settings" ? "Settings" : "Admin Dashboard";
+  const title = location.pathname.includes("/admin/deliveries") ? "Delivery Tracker" : location.pathname === "/admin/settings" ? "Settings" : "Admin Dashboard";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -33,6 +33,9 @@ const AdminHeader = () => {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/admin/deliveries"><Truck className="h-5 w-5" /></Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>
             <Link to="/admin/settings"><Settings className="h-5 w-5" /></Link>

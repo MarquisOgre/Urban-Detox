@@ -41,6 +41,159 @@ export type Database = {
         }
         Relationships: []
       }
+      deliveries: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          delivery_date: string
+          id: string
+          juice_type: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          delivery_date?: string
+          id?: string
+          juice_type: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          delivery_date?: string
+          id?: string
+          juice_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_customers: {
+        Row: {
+          created_at: string | null
+          delivery_frequency: string
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          phone: string | null
+          preferred_juice: string
+          start_date: string | null
+          subscription_plan: string
+          updated_at: string | null
+          villa_number: string
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_frequency?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          preferred_juice?: string
+          start_date?: string | null
+          subscription_plan?: string
+          updated_at?: string | null
+          villa_number: string
+        }
+        Update: {
+          created_at?: string | null
+          delivery_frequency?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_juice?: string
+          start_date?: string | null
+          subscription_plan?: string
+          updated_at?: string | null
+          villa_number?: string
+        }
+        Relationships: []
+      }
+      delivery_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          customer_id: string
+          id: string
+          month: string
+          paid_date: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          month: string
+          paid_date?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          month?: string
+          paid_date?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_schedules: {
+        Row: {
+          customer_id: string
+          day_of_week: number
+          id: string
+          juice_type: string
+        }
+        Insert: {
+          customer_id: string
+          day_of_week: number
+          id?: string
+          juice_type: string
+        }
+        Update: {
+          customer_id?: string
+          day_of_week?: number
+          id?: string
+          juice_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_schedules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           id: string
