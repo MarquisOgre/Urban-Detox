@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package, ShoppingCart, Clock, DollarSign,
-  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater, CreditCard, CheckCircle, XCircle,
+  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater, CreditCard, CheckCircle, XCircle, Truck,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
