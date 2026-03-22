@@ -41,6 +41,41 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_subscriptions: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          id: string
+          is_active: boolean
+          juice_type: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          is_active?: boolean
+          juice_type: string
+          quantity?: number
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          is_active?: boolean
+          juice_type?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deliveries: {
         Row: {
           created_at: string | null
