@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -145,6 +145,23 @@ const DailyDeliveryTracker = () => {
     refetch();
   };
 
+  const deleteDelivery = async (deliveryId: string) => {
+    const { error } = await supabase.from("deliveries").delete().eq("id", deliveryId);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Delivery deleted");
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
+  const deleteAllDeliveries = async () => {
+    if (deliveries.length === 0) { toast.info("No deliveries to delete"); return; }
+    const { error } = await supabase.from("deliveries").delete().eq("delivery_date", dateStr);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success(`${deliveries.length} deliveries deleted`);
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
   const updateStatus = async (deliveryId: string, status: string) => {
     const { error } = await supabase.from("deliveries").update({ status, updated_at: new Date().toISOString() }).eq("id", deliveryId);
     if (error) { toast.error("Failed to update"); return; }
@@ -210,6 +227,9 @@ const DailyDeliveryTracker = () => {
             </Button>
             <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-3 w-3 mr-1" /> CSV</Button>
             <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="h-3 w-3 mr-1" /> Print</Button>
+            <Button size="sm" variant="destructive" onClick={deleteAllDeliveries}>
+              <Trash2 className="h-3 w-3 mr-1" /> Delete All
+            </Button>
           </div>
         </div>
         <div className="flex gap-4 mt-3 text-sm flex-wrap">
@@ -276,6 +296,15 @@ const DailyDeliveryTracker = () => {
                         </Button>
                       );
                     })}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={() => deleteDelivery(d.id)}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
                 <Input
