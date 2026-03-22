@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AdminHeader from "@/components/admin/AdminHeader";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
