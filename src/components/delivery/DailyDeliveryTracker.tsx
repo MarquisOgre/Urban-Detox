@@ -227,6 +227,9 @@ const DailyDeliveryTracker = () => {
             </Button>
             <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-3 w-3 mr-1" /> CSV</Button>
             <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="h-3 w-3 mr-1" /> Print</Button>
+            <Button size="sm" variant="destructive" onClick={deleteAllDeliveries}>
+              <Trash2 className="h-3 w-3 mr-1" /> Delete All
+            </Button>
           </div>
         </div>
         <div className="flex gap-4 mt-3 text-sm flex-wrap">
