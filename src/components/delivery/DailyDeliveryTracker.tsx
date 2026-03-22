@@ -145,6 +145,23 @@ const DailyDeliveryTracker = () => {
     refetch();
   };
 
+  const deleteDelivery = async (deliveryId: string) => {
+    const { error } = await supabase.from("deliveries").delete().eq("id", deliveryId);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Delivery deleted");
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
+  const deleteAllDeliveries = async () => {
+    if (deliveries.length === 0) { toast.info("No deliveries to delete"); return; }
+    const { error } = await supabase.from("deliveries").delete().eq("delivery_date", dateStr);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success(`${deliveries.length} deliveries deleted`);
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
   const updateStatus = async (deliveryId: string, status: string) => {
     const { error } = await supabase.from("deliveries").update({ status, updated_at: new Date().toISOString() }).eq("id", deliveryId);
     if (error) { toast.error("Failed to update"); return; }
