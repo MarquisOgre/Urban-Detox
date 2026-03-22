@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AdminHeader from "@/components/admin/AdminHeader";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Package, ShoppingCart, Clock, DollarSign,
-  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater, CreditCard, CheckCircle, XCircle,
+  Plus, Trash2, Edit2, Eye, Mail, Download, Upload, GlassWater, CreditCard, CheckCircle, XCircle, Truck,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -353,6 +353,11 @@ const AdminDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="detox" className="flex items-center gap-1.5 data-[state=active]:bg-card">
               <GlassWater className="h-4 w-4" /> Detox Juice
+            </TabsTrigger>
+            <TabsTrigger value="deliveries" className="flex items-center gap-1.5 data-[state=active]:bg-card" asChild>
+              <Link to="/admin/deliveries">
+                <Truck className="h-4 w-4" /> Deliveries
+              </Link>
             </TabsTrigger>
           </TabsList>
 
