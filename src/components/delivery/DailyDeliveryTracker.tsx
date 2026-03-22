@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
-
-const JUICE_TYPES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mix Veg", "Tomato", "Wheatgrass"];
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300", icon: Clock },
@@ -32,6 +30,14 @@ const DailyDeliveryTracker = () => {
     },
   });
 
+  const { data: customerSubs = [] } = useQuery({
+    queryKey: ["customer-subscriptions-all"],
+    queryFn: async () => {
+      const { data } = await supabase.from("customer_subscriptions").select("*").eq("is_active", true);
+      return data || [];
+    },
+  });
+
   const { data: schedules = [] } = useQuery({
     queryKey: ["delivery-schedules"],
     queryFn: async () => {
@@ -48,17 +54,25 @@ const DailyDeliveryTracker = () => {
     },
   });
 
-  const getJuiceForCustomer = (customerId: string) => {
+  const getSubscriptionsForCustomer = (customerId: string): { juice_type: string; quantity: number }[] => {
     const dayOfWeek = selectedDate.getDay();
-    const schedule = schedules.find((s) => s.customer_id === customerId && s.day_of_week === dayOfWeek);
-    if (schedule) return schedule.juice_type;
+    const schedule = schedules.filter((s) => s.customer_id === customerId && s.day_of_week === dayOfWeek);
+    if (schedule.length > 0) {
+      return schedule.map((s) => ({ juice_type: s.juice_type, quantity: 1 }));
+    }
+    const subs = customerSubs.filter((s: any) => s.customer_id === customerId);
+    if (subs.length > 0) {
+      return subs.map((s: any) => ({ juice_type: s.juice_type, quantity: s.quantity }));
+    }
     const customer = customers.find((c) => c.id === customerId);
-    return customer?.preferred_juice || "Ash Gourd";
+    return [{ juice_type: customer?.preferred_juice || "Ash Gourd", quantity: 1 }];
   };
 
   const generateDeliveries = async () => {
     const existing = deliveries.map((d) => d.customer_id);
-    const newDeliveries = customers
+    const newDeliveries: any[] = [];
+
+    customers
       .filter((c) => !existing.includes(c.id))
       .filter((c) => {
         if (c.delivery_frequency === "alternate") {
@@ -68,13 +82,18 @@ const DailyDeliveryTracker = () => {
         }
         return true;
       })
-      .map((c) => ({
-        customer_id: c.id,
-        delivery_date: dateStr,
-        juice_type: getJuiceForCustomer(c.id),
-        quantity: 1,
-        status: "pending" as const,
-      }));
+      .forEach((c) => {
+        const subs = getSubscriptionsForCustomer(c.id);
+        subs.forEach((sub) => {
+          newDeliveries.push({
+            customer_id: c.id,
+            delivery_date: dateStr,
+            juice_type: sub.juice_type,
+            quantity: sub.quantity,
+            status: "pending",
+          });
+        });
+      });
 
     if (newDeliveries.length === 0) {
       toast.info("All deliveries already generated for this date");
@@ -87,24 +106,36 @@ const DailyDeliveryTracker = () => {
     refetch();
   };
 
-  // Auto-skip: mark all pending as "missed" for past dates
+  const markAllDelivered = async () => {
+    const pendingIds = deliveries.filter((d) => d.status === "pending").map((d) => d.id);
+    if (pendingIds.length === 0) {
+      toast.info("No pending deliveries to mark");
+      return;
+    }
+    const { error } = await supabase
+      .from("deliveries")
+      .update({ status: "delivered", updated_at: new Date().toISOString() })
+      .in("id", pendingIds);
+    if (error) { toast.error("Failed to update"); return; }
+    toast.success(`${pendingIds.length} deliveries marked as delivered`);
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ["deliveries-today"] });
+  };
+
   const autoSkipMissed = async () => {
     const now = new Date();
-    const cutoffHour = 20; // 8 PM cutoff
+    const cutoffHour = 20;
     const isToday = dateStr === format(now, "yyyy-MM-dd");
     const isPast = selectedDate < new Date(format(now, "yyyy-MM-dd"));
-    
     if (!isPast && !(isToday && now.getHours() >= cutoffHour)) {
       toast.info("Auto-skip only works for past dates or after 8 PM today");
       return;
     }
-
     const pendingIds = deliveries.filter((d) => d.status === "pending").map((d) => d.id);
     if (pendingIds.length === 0) {
       toast.info("No pending deliveries to mark as missed");
       return;
     }
-
     const { error } = await supabase
       .from("deliveries")
       .update({ status: "missed", updated_at: new Date().toISOString() })
@@ -135,12 +166,12 @@ const DailyDeliveryTracker = () => {
   const pending = deliveries.filter((d) => d.status === "pending").length;
   const skipped = deliveries.filter((d) => d.status === "skipped").length;
   const missed = deliveries.filter((d) => d.status === "missed").length;
-  const totalQty = deliveries.reduce((sum, d) => sum + ((d as any).quantity || 1), 0);
+  const totalQty = deliveries.reduce((sum, d) => sum + (d.quantity || 1), 0);
 
   const exportCSV = () => {
     const rows = deliveries.map((d) => {
       const c = customers.find((cu) => cu.id === d.customer_id);
-      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${(d as any).quantity || 1},${d.status},${d.notes || ""}`;
+      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status},${d.notes || ""}`;
     });
     const csv = `Name,Villa,Juice,Qty,Status,Notes\n${rows.join("\n")}`;
     const blob = new Blob([csv], { type: "text/csv" });
@@ -153,7 +184,6 @@ const DailyDeliveryTracker = () => {
 
   return (
     <div className="space-y-4">
-      {/* Date navigation & summary */}
       <Card className="p-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
@@ -172,6 +202,9 @@ const DailyDeliveryTracker = () => {
             <Button size="sm" onClick={generateDeliveries} className="bg-primary text-primary-foreground">
               <RefreshCw className="h-3 w-3 mr-1" /> Generate
             </Button>
+            <Button size="sm" onClick={markAllDelivered} className="bg-green-600 hover:bg-green-700 text-white">
+              <CheckCheck className="h-3 w-3 mr-1" /> All Delivered
+            </Button>
             <Button size="sm" variant="destructive" onClick={autoSkipMissed}>
               <AlertTriangle className="h-3 w-3 mr-1" /> Auto-Skip
             </Button>
@@ -189,7 +222,6 @@ const DailyDeliveryTracker = () => {
         </div>
       </Card>
 
-      {/* Delivery list */}
       <div className="space-y-2">
         {deliveries.length === 0 && (
           <Card className="p-8 text-center text-muted-foreground">
@@ -206,7 +238,6 @@ const DailyDeliveryTracker = () => {
             const customer = customers.find((c) => c.id === d.customer_id);
             const sc = statusConfig[d.status] || statusConfig.pending;
             const Icon = sc.icon;
-            const qty = (d as any).quantity || 1;
             return (
               <Card key={d.id} className={`p-3 transition-all ${d.status === "delivered" ? "opacity-70" : ""}`}>
                 <div className="flex items-start justify-between gap-2">
@@ -221,9 +252,9 @@ const DailyDeliveryTracker = () => {
                     <div className="flex items-center gap-3 mt-1">
                       <p className="text-xs text-muted-foreground">🥤 {d.juice_type}</p>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, qty - 1)}>-</Button>
-                        <span className="text-xs font-bold text-foreground w-4 text-center">{qty}</span>
-                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, qty + 1)}>+</Button>
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, (d.quantity || 1) - 1)}>-</Button>
+                        <span className="text-xs font-bold text-foreground w-4 text-center">{d.quantity || 1}</span>
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => updateQuantity(d.id, (d.quantity || 1) + 1)}>+</Button>
                       </div>
                     </div>
                     {d.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">📝 {d.notes}</p>}
