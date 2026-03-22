@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {

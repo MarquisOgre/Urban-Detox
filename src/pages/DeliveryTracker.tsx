@@ -34,30 +34,35 @@ const DeliveryTracker = () => {
     <div className="min-h-screen bg-background">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
-            <Truck className="h-7 w-7 text-primary" />
-            Urban Detox — Delivery Tracker
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage daily juice deliveries, customers & payments</p>
+        <div className="mb-6 flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/admin"><ArrowLeft className="h-5 w-5" /></Link>
+          </Button>
+          <div>
+            <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+              <Truck className="h-7 w-7 text-primary" />
+              Urban Detox — Delivery Tracker
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage daily juice deliveries, customers & payments</p>
+          </div>
         </div>
 
-        <Tabs defaultValue="dashboard" className="space-y-4">
+        <Tabs defaultValue="customers" className="space-y-4">
           <TabsList className="flex flex-wrap gap-1 h-auto bg-secondary/50 p-1">
-            <TabsTrigger value="dashboard" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
-              <BarChart3 className="h-4 w-4" /> Dashboard
+            <TabsTrigger value="customers" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
+              <Users className="h-4 w-4" /> Customers
             </TabsTrigger>
             <TabsTrigger value="daily" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
               <CalendarCheck className="h-4 w-4" /> Daily
             </TabsTrigger>
-            <TabsTrigger value="customers" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
-              <Users className="h-4 w-4" /> Customers
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
-              <CreditCard className="h-4 w-4" /> Payments
+            <TabsTrigger value="dashboard" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
+              <BarChart3 className="h-4 w-4" /> Dashboard
             </TabsTrigger>
             <TabsTrigger value="inventory" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
               <Package className="h-4 w-4" /> Inventory
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
+              <CreditCard className="h-4 w-4" /> Payments
             </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card">
               <BarChart3 className="h-4 w-4" /> Reports
