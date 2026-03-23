@@ -4,10 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+
+const JUICE_TYPES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mix Veg", "Tomato", "Wheatgrass"];
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300", icon: Clock },
@@ -21,11 +26,25 @@ const DailyDeliveryTracker = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const dateStr = format(selectedDate, "yyyy-MM-dd");
   const queryClient = useQueryClient();
+  const [addDialog, setAddDialog] = useState(false);
+  const [addCustomerId, setAddCustomerId] = useState("");
+  const [addJuice, setAddJuice] = useState("Ash Gourd");
+  const [addCustomJuice, setAddCustomJuice] = useState("");
+  const [addQty, setAddQty] = useState(1);
+  const [useCustomJuice, setUseCustomJuice] = useState(false);
 
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-active"],
     queryFn: async () => {
       const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true).order("villa_number");
+      return data || [];
+    },
+  });
+
+  const { data: allCustomers = [] } = useQuery({
+    queryKey: ["delivery-customers-all-for-add"],
+    queryFn: async () => {
+      const { data } = await supabase.from("delivery_customers").select("*").order("villa_number");
       return data || [];
     },
   });
@@ -108,10 +127,7 @@ const DailyDeliveryTracker = () => {
 
   const markAllDelivered = async () => {
     const pendingIds = deliveries.filter((d) => d.status === "pending").map((d) => d.id);
-    if (pendingIds.length === 0) {
-      toast.info("No pending deliveries to mark");
-      return;
-    }
+    if (pendingIds.length === 0) { toast.info("No pending deliveries to mark"); return; }
     const { error } = await supabase
       .from("deliveries")
       .update({ status: "delivered", updated_at: new Date().toISOString() })
@@ -124,18 +140,14 @@ const DailyDeliveryTracker = () => {
 
   const autoSkipMissed = async () => {
     const now = new Date();
-    const cutoffHour = 20;
     const isToday = dateStr === format(now, "yyyy-MM-dd");
     const isPast = selectedDate < new Date(format(now, "yyyy-MM-dd"));
-    if (!isPast && !(isToday && now.getHours() >= cutoffHour)) {
+    if (!isPast && !(isToday && now.getHours() >= 20)) {
       toast.info("Auto-skip only works for past dates or after 8 PM today");
       return;
     }
     const pendingIds = deliveries.filter((d) => d.status === "pending").map((d) => d.id);
-    if (pendingIds.length === 0) {
-      toast.info("No pending deliveries to mark as missed");
-      return;
-    }
+    if (pendingIds.length === 0) { toast.info("No pending deliveries to mark as missed"); return; }
     const { error } = await supabase
       .from("deliveries")
       .update({ status: "missed", updated_at: new Date().toISOString() })
@@ -179,11 +191,37 @@ const DailyDeliveryTracker = () => {
     await supabase.from("deliveries").update({ notes }).eq("id", deliveryId);
   };
 
+  const addManualJuice = async () => {
+    if (!addCustomerId) { toast.error("Select a customer"); return; }
+    const juiceType = useCustomJuice ? addCustomJuice.trim() : addJuice;
+    if (!juiceType) { toast.error("Enter a juice type"); return; }
+    const { error } = await supabase.from("deliveries").insert({
+      customer_id: addCustomerId,
+      delivery_date: dateStr,
+      juice_type: juiceType,
+      quantity: addQty,
+      status: "pending",
+    });
+    if (error) { toast.error("Failed to add"); return; }
+    toast.success("Juice added manually");
+    setAddDialog(false);
+    setAddCustomerId("");
+    setAddJuice("Ash Gourd");
+    setAddCustomJuice("");
+    setAddQty(1);
+    setUseCustomJuice(false);
+    refetch();
+  };
+
   const delivered = deliveries.filter((d) => d.status === "delivered").length;
   const pending = deliveries.filter((d) => d.status === "pending").length;
   const skipped = deliveries.filter((d) => d.status === "skipped").length;
   const missed = deliveries.filter((d) => d.status === "missed").length;
   const totalQty = deliveries.reduce((sum, d) => sum + (d.quantity || 1), 0);
+
+  const sortedCustomersList = [...allCustomers].sort((a, b) =>
+    a.villa_number.localeCompare(b.villa_number, undefined, { numeric: true })
+  );
 
   const exportCSV = () => {
     const rows = deliveries.map((d) => {
@@ -218,6 +256,9 @@ const DailyDeliveryTracker = () => {
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" onClick={generateDeliveries} className="bg-primary text-primary-foreground">
               <RefreshCw className="h-3 w-3 mr-1" /> Generate
+            </Button>
+            <Button size="sm" onClick={() => setAddDialog(true)} variant="outline">
+              <Plus className="h-3 w-3 mr-1" /> Add Juice
             </Button>
             <Button size="sm" onClick={markAllDelivered} className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCheck className="h-3 w-3 mr-1" /> All Delivered
@@ -317,6 +358,61 @@ const DailyDeliveryTracker = () => {
             );
           })}
       </div>
+
+      {/* Add Juice Manually Dialog */}
+      <Dialog open={addDialog} onOpenChange={setAddDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Juice Manually</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Customer (Villa)</Label>
+              <Select value={addCustomerId} onValueChange={setAddCustomerId}>
+                <SelectTrigger><SelectValue placeholder="Select villa..." /></SelectTrigger>
+                <SelectContent>
+                  {sortedCustomersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>Villa {c.villa_number} — {c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Juice Type</Label>
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  id="custom-juice-cb"
+                  checked={useCustomJuice}
+                  onChange={(e) => setUseCustomJuice(e.target.checked)}
+                />
+                <Label htmlFor="custom-juice-cb" className="text-xs text-muted-foreground">Custom juice name</Label>
+              </div>
+              {useCustomJuice ? (
+                <Input
+                  placeholder="Enter custom juice name..."
+                  value={addCustomJuice}
+                  onChange={(e) => setAddCustomJuice(e.target.value)}
+                />
+              ) : (
+                <Select value={addJuice} onValueChange={setAddJuice}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {JUICE_TYPES.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div>
+              <Label className="text-xs">Quantity</Label>
+              <Input type="number" min={1} value={addQty} onChange={(e) => setAddQty(Math.max(1, parseInt(e.target.value) || 1))} />
+            </div>
+            <Button onClick={addManualJuice} className="w-full bg-primary text-primary-foreground">
+              <Plus className="h-4 w-4 mr-1" /> Add Juice
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

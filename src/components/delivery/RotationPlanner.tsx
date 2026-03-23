@@ -17,7 +17,7 @@ const RotationPlanner = () => {
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-active"],
     queryFn: async () => {
-      const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true).order("name");
+      const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true).order("villa_number");
       return data || [];
     },
   });
@@ -30,6 +30,10 @@ const RotationPlanner = () => {
     },
   });
 
+  const sortedCustomers = [...customers].sort((a, b) =>
+    a.villa_number.localeCompare(b.villa_number, undefined, { numeric: true })
+  );
+
   const loadCustomerSchedule = (customerId: string) => {
     setSelectedCustomer(customerId);
     const cs = schedules.filter((s) => s.customer_id === customerId);
@@ -40,9 +44,7 @@ const RotationPlanner = () => {
 
   const saveSchedule = async () => {
     if (!selectedCustomer) return;
-    // Delete existing
     await supabase.from("delivery_schedules").delete().eq("customer_id", selectedCustomer);
-    // Insert new
     const rows = Object.entries(schedule)
       .filter(([_, juice]) => juice)
       .map(([day, juice]) => ({
@@ -66,7 +68,6 @@ const RotationPlanner = () => {
     setSchedule(defaultRotation);
   };
 
-  // Overview: show all customers with their schedules
   const customerScheduleMap = new Map<string, Record<number, string>>();
   schedules.forEach((s) => {
     if (!customerScheduleMap.has(s.customer_id)) customerScheduleMap.set(s.customer_id, {});
@@ -75,13 +76,12 @@ const RotationPlanner = () => {
 
   return (
     <div className="space-y-4">
-      {/* Editor */}
       <Card className="p-4 space-y-4">
         <h3 className="font-display font-bold text-foreground">Set Weekly Rotation</h3>
         <Select value={selectedCustomer} onValueChange={loadCustomerSchedule}>
           <SelectTrigger><SelectValue placeholder="Select customer..." /></SelectTrigger>
           <SelectContent>
-            {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} (Villa {c.villa_number})</SelectItem>)}
+            {sortedCustomers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name} (Villa {c.villa_number})</SelectItem>)}
           </SelectContent>
         </Select>
 
@@ -106,7 +106,6 @@ const RotationPlanner = () => {
         )}
       </Card>
 
-      {/* Overview */}
       <Card className="p-4">
         <h3 className="font-display font-bold text-foreground mb-3">All Rotation Schedules</h3>
         <div className="overflow-x-auto">
@@ -118,12 +117,11 @@ const RotationPlanner = () => {
               </tr>
             </thead>
             <tbody>
-              {customers.map((c) => {
+              {sortedCustomers.map((c) => {
                 const cs = customerScheduleMap.get(c.id) || {};
-                const hasSchedule = Object.keys(cs).length > 0;
                 return (
                   <tr key={c.id} className="border-b border-border/50">
-                    <td className="py-2 pr-2 font-medium text-foreground whitespace-nowrap">{c.name}</td>
+                    <td className="py-2 pr-2 font-medium text-foreground whitespace-nowrap">{c.name} <span className="text-muted-foreground">(V{c.villa_number})</span></td>
                     {DAYS.map((_, idx) => (
                       <td key={idx} className="text-center py-1 px-1">
                         {cs[idx] ? (
@@ -136,7 +134,7 @@ const RotationPlanner = () => {
                   </tr>
                 );
               })}
-              {customers.length === 0 && (
+              {sortedCustomers.length === 0 && (
                 <tr><td colSpan={8} className="text-center py-4 text-muted-foreground">No active customers</td></tr>
               )}
             </tbody>

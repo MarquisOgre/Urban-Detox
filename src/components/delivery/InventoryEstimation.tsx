@@ -5,8 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { format, addDays } from "date-fns";
 import { Package, TrendingUp } from "lucide-react";
 
-const JUICE_TYPES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mix Veg", "Tomato", "Wheatgrass"];
-
 const InventoryEstimation = () => {
   const tomorrow = addDays(new Date(), 1);
   const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
@@ -15,7 +13,15 @@ const InventoryEstimation = () => {
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-active"],
     queryFn: async () => {
-      const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true);
+      const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true).order("villa_number");
+      return data || [];
+    },
+  });
+
+  const { data: customerSubs = [] } = useQuery({
+    queryKey: ["customer-subscriptions-all"],
+    queryFn: async () => {
+      const { data } = await supabase.from("customer_subscriptions").select("*").eq("is_active", true);
       return data || [];
     },
   });
@@ -36,16 +42,15 @@ const InventoryEstimation = () => {
     },
   });
 
-  // Calculate estimated juice requirements
+  // Calculate estimated juice requirements using subscriptions as primary source
   const estimateJuices = () => {
     const juiceCounts: Record<string, { count: number; customers: string[] }> = {};
-    JUICE_TYPES.forEach((j) => { juiceCounts[j] = { count: 0, customers: [] }; });
 
     // If deliveries already generated, use those
     if (existingDeliveries.length > 0) {
       existingDeliveries.forEach((d) => {
         const customer = customers.find((c) => c.id === d.customer_id);
-        const qty = (d as any).quantity || 1;
+        const qty = d.quantity || 1;
         if (!juiceCounts[d.juice_type]) juiceCounts[d.juice_type] = { count: 0, customers: [] };
         juiceCounts[d.juice_type].count += qty;
         juiceCounts[d.juice_type].customers.push(`${customer?.villa_number || "?"} (${qty})`);
@@ -63,13 +68,37 @@ const InventoryEstimation = () => {
       return true;
     });
 
-    eligibleCustomers.forEach((c) => {
-      const schedule = schedules.find((s) => s.customer_id === c.id && s.day_of_week === dayOfWeek);
-      const juice = schedule?.juice_type || c.preferred_juice || "Ash Gourd";
-      if (!juiceCounts[juice]) juiceCounts[juice] = { count: 0, customers: [] };
-      juiceCounts[juice].count += 1;
-      juiceCounts[juice].customers.push(`${c.villa_number} (1)`);
-    });
+    eligibleCustomers
+      .sort((a, b) => a.villa_number.localeCompare(b.villa_number, undefined, { numeric: true }))
+      .forEach((c) => {
+        // Check day-specific schedule first
+        const daySchedules = schedules.filter((s) => s.customer_id === c.id && s.day_of_week === dayOfWeek);
+        if (daySchedules.length > 0) {
+          daySchedules.forEach((s) => {
+            if (!juiceCounts[s.juice_type]) juiceCounts[s.juice_type] = { count: 0, customers: [] };
+            juiceCounts[s.juice_type].count += 1;
+            juiceCounts[s.juice_type].customers.push(`${c.villa_number} (1)`);
+          });
+          return;
+        }
+
+        // Then check customer subscriptions
+        const subs = customerSubs.filter((s: any) => s.customer_id === c.id);
+        if (subs.length > 0) {
+          subs.forEach((s: any) => {
+            if (!juiceCounts[s.juice_type]) juiceCounts[s.juice_type] = { count: 0, customers: [] };
+            juiceCounts[s.juice_type].count += s.quantity;
+            juiceCounts[s.juice_type].customers.push(`${c.villa_number} (${s.quantity})`);
+          });
+          return;
+        }
+
+        // Fallback to preferred juice
+        const juice = c.preferred_juice || "Ash Gourd";
+        if (!juiceCounts[juice]) juiceCounts[juice] = { count: 0, customers: [] };
+        juiceCounts[juice].count += 1;
+        juiceCounts[juice].customers.push(`${c.villa_number} (1)`);
+      });
 
     return juiceCounts;
   };
@@ -89,7 +118,7 @@ const InventoryEstimation = () => {
             </h3>
             <p className="text-sm text-muted-foreground">
               {format(tomorrow, "EEEE, dd MMM yyyy")}
-              {existingDeliveries.length > 0 ? " (from generated deliveries)" : " (estimated from schedules)"}
+              {existingDeliveries.length > 0 ? " (from generated deliveries)" : " (estimated from subscriptions)"}
             </p>
           </div>
           <div className="text-right">
@@ -107,9 +136,15 @@ const InventoryEstimation = () => {
               <Badge className="bg-primary/10 text-primary font-bold">{data.count}</Badge>
             </div>
             <div className="flex flex-wrap gap-1">
-              {data.customers.map((c, i) => (
-                <Badge key={i} variant="outline" className="text-xs">Villa {c}</Badge>
-              ))}
+              {data.customers
+                .sort((a, b) => {
+                  const va = a.split(" ")[0];
+                  const vb = b.split(" ")[0];
+                  return va.localeCompare(vb, undefined, { numeric: true });
+                })
+                .map((c, i) => (
+                  <Badge key={i} variant="outline" className="text-xs">Villa {c}</Badge>
+                ))}
             </div>
           </Card>
         ))}
@@ -121,7 +156,6 @@ const InventoryEstimation = () => {
         </Card>
       )}
 
-      {/* Summary bar chart */}
       {activeJuices.length > 0 && (
         <Card className="p-4">
           <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
