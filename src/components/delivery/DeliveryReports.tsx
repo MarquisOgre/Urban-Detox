@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Printer, BarChart3 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Download, Printer, BarChart3, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -16,6 +18,7 @@ const DeliveryReports = () => {
   const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-01"));
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [juiceFilter, setJuiceFilter] = useState("All");
+  const [selectedVilla, setSelectedVilla] = useState<{ name: string; villa: string; customerId: string } | null>(null);
 
   const { data: deliveries = [] } = useQuery({
     queryKey: ["delivery-report", startDate, endDate],
@@ -28,7 +31,7 @@ const DeliveryReports = () => {
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("delivery_customers").select("*");
+      const { data } = await supabase.from("delivery_customers").select("*").order("villa_number");
       return data || [];
     },
   });
@@ -39,34 +42,41 @@ const DeliveryReports = () => {
   const pending = filtered.filter((d) => d.status === "pending").length;
   const skipped = filtered.filter((d) => d.status === "skipped").length;
   const missed = filtered.filter((d) => d.status === "missed").length;
-  const totalQty = filtered.reduce((sum, d) => sum + ((d as any).quantity || 1), 0);
 
   // Juice breakdown
   const juiceBreakdown: Record<string, number> = {};
   filtered.filter((d) => d.status === "delivered").forEach((d) => {
-    const qty = (d as any).quantity || 1;
+    const qty = d.quantity || 1;
     juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + qty;
   });
   const deliveredQty = Object.values(juiceBreakdown).reduce((s, v) => s + v, 0);
 
-  // Customer stats
+  // Customer stats sorted by villa ascending
   const customerStats = customers.map((c) => {
     const cDeliveries = filtered.filter((d) => d.customer_id === c.id);
     return {
+      id: c.id,
       name: c.name,
       villa: c.villa_number,
       total: cDeliveries.length,
       delivered: cDeliveries.filter((d) => d.status === "delivered").length,
       skipped: cDeliveries.filter((d) => d.status === "skipped").length,
     };
-  }).filter((c) => c.total > 0).sort((a, b) => b.skipped - a.skipped);
+  }).filter((c) => c.total > 0).sort((a, b) => a.villa.localeCompare(b.villa, undefined, { numeric: true }));
+
+  // Villa detail: deliveries for the selected customer
+  const villaDeliveries = selectedVilla
+    ? filtered
+        .filter((d) => d.customer_id === selectedVilla.customerId)
+        .sort((a, b) => a.delivery_date.localeCompare(b.delivery_date))
+    : [];
 
   const exportCSV = () => {
     const rows = filtered.map((d) => {
       const c = customers.find((cu) => cu.id === d.customer_id);
-      return `${d.delivery_date},${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.status}`;
+      return `${d.delivery_date},${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status}`;
     });
-    const csv = `Date,Name,Villa,Juice,Status\n${rows.join("\n")}`;
+    const csv = `Date,Name,Villa,Juice,Qty,Status\n${rows.join("\n")}`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `report-${startDate}-${endDate}.csv`; a.click();
@@ -128,6 +138,7 @@ const DeliveryReports = () => {
       {/* Customer stats */}
       <Card className="p-4">
         <h3 className="font-display font-bold text-foreground mb-3">Customer Summary</h3>
+        <p className="text-xs text-muted-foreground mb-2">Click a villa number to view detailed delivery history</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b text-muted-foreground text-xs">
@@ -136,9 +147,17 @@ const DeliveryReports = () => {
             </tr></thead>
             <tbody>
               {customerStats.map((c) => (
-                <tr key={c.name + c.villa} className="border-b border-border/50">
+                <tr key={c.id} className="border-b border-border/50">
                   <td className="py-2 font-medium text-foreground">{c.name}</td>
-                  <td className="py-2 text-muted-foreground">{c.villa}</td>
+                  <td className="py-2">
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-primary font-bold underline-offset-2"
+                      onClick={() => setSelectedVilla({ name: c.name, villa: c.villa, customerId: c.id })}
+                    >
+                      Villa {c.villa}
+                    </Button>
+                  </td>
                   <td className="py-2 text-center">{c.total}</td>
                   <td className="py-2 text-center text-green-600">{c.delivered}</td>
                   <td className="py-2 text-center text-red-500">{c.skipped}</td>
@@ -148,6 +167,60 @@ const DeliveryReports = () => {
           </table>
         </div>
       </Card>
+
+      {/* Villa Detail Dialog */}
+      <Dialog open={!!selectedVilla} onOpenChange={(open) => !open && setSelectedVilla(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedVilla(null)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              {selectedVilla?.name} — Villa {selectedVilla?.villa}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground mb-3">
+              Showing deliveries from {startDate} to {endDate} ({villaDeliveries.length} records)
+            </p>
+            {villaDeliveries.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No deliveries found for this period.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-muted-foreground text-xs">
+                      <th className="text-left py-2">Date</th>
+                      <th className="text-left py-2">Juice</th>
+                      <th className="text-center py-2">Qty</th>
+                      <th className="text-center py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {villaDeliveries.map((d) => (
+                      <tr key={d.id} className="border-b border-border/50">
+                        <td className="py-1.5 text-foreground">{format(new Date(d.delivery_date), "dd MMM yyyy")}</td>
+                        <td className="py-1.5 text-foreground">{d.juice_type}</td>
+                        <td className="py-1.5 text-center">{d.quantity || 1}</td>
+                        <td className="py-1.5 text-center">
+                          <Badge className={`text-xs ${
+                            d.status === "delivered" ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" :
+                            d.status === "skipped" ? "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300" :
+                            d.status === "missed" ? "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300" :
+                            "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
+                          }`}>
+                            {d.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
