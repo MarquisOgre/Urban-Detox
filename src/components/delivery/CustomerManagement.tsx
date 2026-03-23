@@ -152,7 +152,11 @@ const CustomerManagement = () => {
         </Button>
       </div>
 
-      <div className="text-sm text-muted-foreground">{filtered.length} customers</div>
+      <div className="text-sm text-muted-foreground flex gap-3">
+        <span>Active: <strong className="text-green-600">{customers.filter(c => c.is_active).length}</strong></span>
+        <span>Inactive: <strong className="text-destructive">{customers.filter(c => !c.is_active).length}</strong></span>
+        {search && <span>Showing: <strong>{filtered.length}</strong></span>}
+      </div>
 
       <div className="space-y-2">
         {filtered.map((c) => {

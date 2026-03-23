@@ -32,17 +32,18 @@ const DeliveryDashboard = () => {
     },
   });
 
-  const delivered = deliveries.filter((d) => d.status === "delivered").length;
-  const pending = deliveries.filter((d) => d.status === "pending").length;
-  const skipped = deliveries.filter((d) => d.status === "skipped").length;
+  const totalJuices = deliveries.reduce((s, d) => s + (d.quantity || 1), 0);
+  const deliveredJuices = deliveries.filter((d) => d.status === "delivered").reduce((s, d) => s + (d.quantity || 1), 0);
+  const pendingJuices = deliveries.filter((d) => d.status === "pending").reduce((s, d) => s + (d.quantity || 1), 0);
+  const skippedJuices = deliveries.filter((d) => d.status === "skipped").reduce((s, d) => s + (d.quantity || 1), 0);
   const paidAmount = payments.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount), 0);
   const pendingAmount = payments.filter((p) => p.status === "pending").reduce((s, p) => s + Number(p.amount), 0);
 
   const stats = [
-    { label: "Total Today", value: deliveries.length, icon: Truck, color: "text-primary" },
-    { label: "Delivered", value: delivered, icon: CheckCircle, color: "text-green-600" },
-    { label: "Pending", value: pending, icon: Clock, color: "text-yellow-600" },
-    { label: "Skipped", value: skipped, icon: SkipForward, color: "text-red-500" },
+    { label: "Total Juices", value: totalJuices, icon: Truck, color: "text-primary" },
+    { label: "Delivered", value: deliveredJuices, icon: CheckCircle, color: "text-green-600" },
+    { label: "Pending", value: pendingJuices, icon: Clock, color: "text-yellow-600" },
+    { label: "Skipped", value: skippedJuices, icon: SkipForward, color: "text-red-500" },
     { label: "Active Customers", value: customers.length, icon: Users, color: "text-primary" },
     { label: "Collected (₹)", value: paidAmount, icon: IndianRupee, color: "text-green-600" },
   ];
@@ -71,10 +72,10 @@ const DeliveryDashboard = () => {
       </Card>
 
       {/* Pending deliveries alert */}
-      {pending > 0 && (
+      {pendingJuices > 0 && (
         <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 p-4">
           <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-            ⚠️ {pending} deliveries still pending for today. Switch to the Daily tab to update.
+            ⚠️ {pendingJuices} juices still pending for today. Switch to the Daily tab to update.
           </p>
         </Card>
       )}
