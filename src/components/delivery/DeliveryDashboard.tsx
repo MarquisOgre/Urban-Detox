@@ -72,10 +72,10 @@ const DeliveryDashboard = () => {
       </Card>
 
       {/* Pending deliveries alert */}
-      {pending > 0 && (
+      {pendingJuices > 0 && (
         <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 p-4">
           <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-            ⚠️ {pending} deliveries still pending for today. Switch to the Daily tab to update.
+            ⚠️ {pendingJuices} juices still pending for today. Switch to the Daily tab to update.
           </p>
         </Card>
       )}
