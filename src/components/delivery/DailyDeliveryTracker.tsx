@@ -34,9 +34,9 @@ const DailyDeliveryTracker = () => {
   const [useCustomJuice, setUseCustomJuice] = useState(false);
 
   const { data: customers = [] } = useQuery({
-    queryKey: ["delivery-customers-active"],
+    queryKey: ["delivery-customers-all-tracker"],
     queryFn: async () => {
-      const { data } = await supabase.from("delivery_customers").select("*").eq("is_active", true).order("villa_number");
+      const { data } = await supabase.from("delivery_customers").select("*").order("villa_number");
       return data || [];
     },
   });
@@ -87,11 +87,13 @@ const DailyDeliveryTracker = () => {
     return [{ juice_type: customer?.preferred_juice || "Ash Gourd", quantity: 1 }];
   };
 
+  const activeCustomers = customers.filter(c => c.is_active);
+
   const generateDeliveries = async () => {
     const existing = deliveries.map((d) => d.customer_id);
     const newDeliveries: any[] = [];
 
-    customers
+    activeCustomers
       .filter((c) => !existing.includes(c.id))
       .filter((c) => {
         if (c.delivery_frequency === "alternate") {
@@ -274,7 +276,7 @@ const DailyDeliveryTracker = () => {
           </div>
         </div>
         <div className="flex gap-4 mt-3 text-sm flex-wrap">
-          <span className="text-muted-foreground">Entries: <strong className="text-foreground">{deliveries.length}</strong></span>
+          <span className="text-muted-foreground">Villas: <strong className="text-foreground">{new Set(deliveries.map(d => d.customer_id)).size}</strong></span>
           <span className="text-muted-foreground">Juices: <strong className="text-foreground">{totalQty}</strong></span>
           <span className="text-green-600">✓ {delivered}</span>
           <span className="text-yellow-600">⏳ {pending}</span>

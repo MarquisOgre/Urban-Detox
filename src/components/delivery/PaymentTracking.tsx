@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { IndianRupee, CheckCircle, Clock, MessageCircle } from "lucide-react";
-import { format, subMonths, addMonths } from "date-fns";
+import { IndianRupee, CheckCircle, Clock, MessageCircle, Bell } from "lucide-react";
+import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { toast } from "sonner";
 
 const PaymentTracking = () => {
@@ -83,6 +83,28 @@ const PaymentTracking = () => {
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
+  // Query deliveries for the month to detect 7-juice milestones
+  const { data: monthDeliveries = [] } = useQuery({
+    queryKey: ["month-deliveries-for-payments", month],
+    queryFn: async () => {
+      const monthStart = format(startOfMonth(new Date(month + "-01")), "yyyy-MM-dd");
+      const monthEnd = format(endOfMonth(new Date(month + "-01")), "yyyy-MM-dd");
+      const { data } = await supabase.from("deliveries").select("*").gte("delivery_date", monthStart).lte("delivery_date", monthEnd).eq("status", "delivered");
+      return data || [];
+    },
+  });
+
+  // Count delivered juices per customer this month
+  const customerJuiceCounts: Record<string, number> = {};
+  monthDeliveries.forEach((d) => {
+    customerJuiceCounts[d.customer_id] = (customerJuiceCounts[d.customer_id] || 0) + (d.quantity || 1);
+  });
+
+  // Customers who have reached exactly 7 juices and don't have a payment record yet
+  const readyForPayment = customers
+    .filter((c) => c.is_active)
+    .filter((c) => (customerJuiceCounts[c.id] || 0) >= 7 && !getPayment(c.id));
+
   const totalPaid = payments.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount), 0);
   const totalPending = payments.filter((p) => p.status === "pending").reduce((s, p) => s + Number(p.amount), 0);
 
@@ -103,6 +125,25 @@ const PaymentTracking = () => {
           <div className="flex items-center gap-1"><Clock className="h-3 w-3 text-yellow-600" /> Pending: <strong className="text-yellow-600">₹{totalPending}</strong></div>
         </div>
       </Card>
+
+      {/* 7-juice notification */}
+      {readyForPayment.length > 0 && (
+        <Card className="border-orange-300 bg-orange-50 dark:bg-orange-900/20 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-orange-600" />
+            <p className="text-sm font-bold text-orange-800 dark:text-orange-300">
+              {readyForPayment.length} villa(s) reached 7+ juices — payment due!
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {readyForPayment.map((c) => (
+              <Badge key={c.id} className="bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100 cursor-pointer" onClick={() => togglePayment(c.id)}>
+                Villa {c.villa_number} — {customerJuiceCounts[c.id]} juices → Add Payment
+              </Badge>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Customer payment list */}
       <div className="space-y-2">
