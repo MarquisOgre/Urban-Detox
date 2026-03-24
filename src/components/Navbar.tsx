@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Juices", path: "/products" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
+  { label: "Recent Orders", path: "/recent-orders" },  
 ];
 
 const Navbar = () => {
