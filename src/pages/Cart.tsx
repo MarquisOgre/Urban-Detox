@@ -200,7 +200,7 @@ const Cart = () => {
 
         if (deliveryCustomerId) {
           const todayStr = new Date().toISOString().split("T")[0];
-          const monthStr = format(new Date(), "yyyy-MM");
+          const monthStr = formatDate(new Date(), "yyyy-MM");
 
           // Create delivery records for each item
           const deliveryRows = items.map((item) => ({
