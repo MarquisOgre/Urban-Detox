@@ -82,6 +82,7 @@ export type Database = {
           customer_id: string
           delivery_date: string
           id: string
+          is_complimentary: boolean
           juice_type: string
           notes: string | null
           quantity: number
@@ -93,6 +94,7 @@ export type Database = {
           customer_id: string
           delivery_date?: string
           id?: string
+          is_complimentary?: boolean
           juice_type: string
           notes?: string | null
           quantity?: number
@@ -104,6 +106,7 @@ export type Database = {
           customer_id?: string
           delivery_date?: string
           id?: string
+          is_complimentary?: boolean
           juice_type?: string
           notes?: string | null
           quantity?: number
@@ -128,6 +131,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           notes: string | null
+          payment_threshold: number
           phone: string | null
           preferred_juice: string
           start_date: string | null
@@ -142,6 +146,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           notes?: string | null
+          payment_threshold?: number
           phone?: string | null
           preferred_juice?: string
           start_date?: string | null
@@ -156,6 +161,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           notes?: string | null
+          payment_threshold?: number
           phone?: string | null
           preferred_juice?: string
           start_date?: string | null
