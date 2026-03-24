@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, addDays, subDays } from "date-fns";
-import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2, Plus } from "lucide-react";
+import { CheckCircle, Clock, SkipForward, Pause, ChevronLeft, ChevronRight, Printer, Download, RefreshCw, AlertTriangle, CheckCheck, Trash2, Plus, Gift } from "lucide-react";
 import { toast } from "sonner";
 
 const JUICE_TYPES = ["Ash Gourd", "Beetroot", "Carrot", "Cucumber", "Mix Veg", "Tomato", "Wheatgrass"];
@@ -32,6 +32,7 @@ const DailyDeliveryTracker = () => {
   const [addCustomJuice, setAddCustomJuice] = useState("");
   const [addQty, setAddQty] = useState(1);
   const [useCustomJuice, setUseCustomJuice] = useState(false);
+  const [addComplimentary, setAddComplimentary] = useState(false);
 
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-all-tracker"],
@@ -112,6 +113,7 @@ const DailyDeliveryTracker = () => {
             juice_type: sub.juice_type,
             quantity: sub.quantity,
             status: "pending",
+            is_complimentary: false,
           });
         });
       });
@@ -189,6 +191,12 @@ const DailyDeliveryTracker = () => {
     refetch();
   };
 
+  const toggleComplimentary = async (deliveryId: string, current: boolean) => {
+    await supabase.from("deliveries").update({ is_complimentary: !current } as any).eq("id", deliveryId);
+    refetch();
+    toast.success(!current ? "Marked as complimentary" : "Removed complimentary");
+  };
+
   const updateNote = async (deliveryId: string, notes: string) => {
     await supabase.from("deliveries").update({ notes }).eq("id", deliveryId);
   };
@@ -203,7 +211,8 @@ const DailyDeliveryTracker = () => {
       juice_type: juiceType,
       quantity: addQty,
       status: "pending",
-    });
+      is_complimentary: addComplimentary,
+    } as any);
     if (error) { toast.error("Failed to add"); return; }
     toast.success("Juice added manually");
     setAddDialog(false);
@@ -212,6 +221,7 @@ const DailyDeliveryTracker = () => {
     setAddCustomJuice("");
     setAddQty(1);
     setUseCustomJuice(false);
+    setAddComplimentary(false);
     refetch();
   };
 
@@ -228,9 +238,9 @@ const DailyDeliveryTracker = () => {
   const exportCSV = () => {
     const rows = deliveries.map((d) => {
       const c = customers.find((cu) => cu.id === d.customer_id);
-      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status},${d.notes || ""}`;
+      return `${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status},${(d as any).is_complimentary ? "Yes" : "No"},${d.notes || ""}`;
     });
-    const csv = `Name,Villa,Juice,Qty,Status,Notes\n${rows.join("\n")}`;
+    const csv = `Name,Villa,Juice,Qty,Status,Complimentary,Notes\n${rows.join("\n")}`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -301,8 +311,9 @@ const DailyDeliveryTracker = () => {
             const customer = customers.find((c) => c.id === d.customer_id);
             const sc = statusConfig[d.status] || statusConfig.pending;
             const Icon = sc.icon;
+            const isComp = (d as any).is_complimentary;
             return (
-              <Card key={d.id} className={`p-3 transition-all ${d.status === "delivered" ? "opacity-70" : ""}`}>
+              <Card key={d.id} className={`p-3 transition-all ${d.status === "delivered" ? "opacity-70" : ""} ${isComp ? "border-purple-300 dark:border-purple-700" : ""}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -311,6 +322,11 @@ const DailyDeliveryTracker = () => {
                       <Badge className={`text-xs ${sc.color}`}>
                         <Icon className="h-3 w-3 mr-1" /> {sc.label}
                       </Badge>
+                      {isComp && (
+                        <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+                          <Gift className="h-3 w-3 mr-1" /> Complimentary
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <p className="text-xs text-muted-foreground">🥤 {d.juice_type}</p>
@@ -322,7 +338,7 @@ const DailyDeliveryTracker = () => {
                     </div>
                     {d.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">📝 {d.notes}</p>}
                   </div>
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex gap-1 shrink-0 flex-wrap">
                     {(["delivered", "pending", "skipped", "on_hold", "missed"] as const).map((s) => {
                       const cfg = statusConfig[s];
                       const SIcon = cfg.icon;
@@ -339,6 +355,15 @@ const DailyDeliveryTracker = () => {
                         </Button>
                       );
                     })}
+                    <Button
+                      variant={isComp ? "default" : "ghost"}
+                      size="icon"
+                      className={`h-8 w-8 ${isComp ? "bg-purple-600 text-white" : ""}`}
+                      onClick={() => toggleComplimentary(d.id, isComp)}
+                      title="Toggle Complimentary"
+                    >
+                      <Gift className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -408,6 +433,17 @@ const DailyDeliveryTracker = () => {
             <div>
               <Label className="text-xs">Quantity</Label>
               <Input type="number" min={1} value={addQty} onChange={(e) => setAddQty(Math.max(1, parseInt(e.target.value) || 1))} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="comp-cb"
+                checked={addComplimentary}
+                onChange={(e) => setAddComplimentary(e.target.checked)}
+              />
+              <Label htmlFor="comp-cb" className="text-xs text-muted-foreground flex items-center gap-1">
+                <Gift className="h-3 w-3 text-purple-600" /> Complimentary (free)
+              </Label>
             </div>
             <Button onClick={addManualJuice} className="w-full bg-primary text-primary-foreground">
               <Plus className="h-4 w-4 mr-1" /> Add Juice
