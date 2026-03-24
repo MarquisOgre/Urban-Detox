@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -8,15 +8,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { IndianRupee, CheckCircle, Clock, MessageCircle, Bell } from "lucide-react";
-import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { IndianRupee, CheckCircle, Clock, MessageCircle, Bell, Gift } from "lucide-react";
+import { format, subMonths, addMonths, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
+
+const PRICING_OPTIONS = [
+  { label: "1 Juice × 7 Days = ₹500", value: 500 },
+  { label: "2 Juices × 7 Days = ₹1000", value: 1000 },
+  { label: "3 Juices × 7 Days = ₹1500", value: 1500 },
+  { label: "Manual Entry", value: -1 },
+];
 
 const PaymentTracking = () => {
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
   const [dialog, setDialog] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [amount, setAmount] = useState("");
+  const [pricingOption, setPricingOption] = useState<number>(500);
 
   const { data: customers = [] } = useQuery({
     queryKey: ["delivery-customers-all"],
@@ -25,6 +33,10 @@ const PaymentTracking = () => {
       return data || [];
     },
   });
+
+  const sortedCustomers = [...customers].sort((a, b) =>
+    a.villa_number.localeCompare(b.villa_number, undefined, { numeric: true })
+  );
 
   const { data: payments = [], refetch } = useQuery({
     queryKey: ["delivery-payments", month],
@@ -53,8 +65,11 @@ const PaymentTracking = () => {
         paid_date: newStatus === "paid" ? new Date().toISOString().split("T")[0] : null,
       }).eq("id", existing.id);
     } else {
-      setSelectedCustomer(customers.find((c) => c.id === customerId));
-      setAmount("");
+      const customer = sortedCustomers.find((c) => c.id === customerId);
+      setSelectedCustomer(customer);
+      // Auto-suggest price based on subscriptions
+      setPricingOption(500);
+      setAmount("500");
       setDialog(true);
       return;
     }
@@ -83,7 +98,7 @@ const PaymentTracking = () => {
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
-  // Query deliveries for the month to detect 7-juice milestones
+  // Query deliveries for the month to detect threshold milestones
   const { data: monthDeliveries = [] } = useQuery({
     queryKey: ["month-deliveries-for-payments", month],
     queryFn: async () => {
@@ -94,16 +109,30 @@ const PaymentTracking = () => {
     },
   });
 
-  // Count delivered juices per customer this month
-  const customerJuiceCounts: Record<string, number> = {};
+  // Count delivered juices per customer this month (exclude complimentary)
+  const customerJuiceCounts: Record<string, { total: number; chargeable: number; complimentary: number }> = {};
   monthDeliveries.forEach((d) => {
-    customerJuiceCounts[d.customer_id] = (customerJuiceCounts[d.customer_id] || 0) + (d.quantity || 1);
+    const qty = d.quantity || 1;
+    const isComp = (d as any).is_complimentary;
+    if (!customerJuiceCounts[d.customer_id]) {
+      customerJuiceCounts[d.customer_id] = { total: 0, chargeable: 0, complimentary: 0 };
+    }
+    customerJuiceCounts[d.customer_id].total += qty;
+    if (isComp) {
+      customerJuiceCounts[d.customer_id].complimentary += qty;
+    } else {
+      customerJuiceCounts[d.customer_id].chargeable += qty;
+    }
   });
 
-  // Customers who have reached exactly 7 juices and don't have a payment record yet
-  const readyForPayment = customers
+  // Customers who have reached their configurable threshold and don't have a payment record yet
+  const readyForPayment = sortedCustomers
     .filter((c) => c.is_active)
-    .filter((c) => (customerJuiceCounts[c.id] || 0) >= 7 && !getPayment(c.id));
+    .filter((c) => {
+      const threshold = (c as any).payment_threshold ?? 7;
+      const counts = customerJuiceCounts[c.id];
+      return (counts?.chargeable || 0) >= threshold && !getPayment(c.id);
+    });
 
   const totalPaid = payments.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount), 0);
   const totalPending = payments.filter((p) => p.status === "pending").reduce((s, p) => s + Number(p.amount), 0);
@@ -126,30 +155,37 @@ const PaymentTracking = () => {
         </div>
       </Card>
 
-      {/* 7-juice notification */}
+      {/* Threshold notification */}
       {readyForPayment.length > 0 && (
         <Card className="border-orange-300 bg-orange-50 dark:bg-orange-900/20 p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-orange-600" />
             <p className="text-sm font-bold text-orange-800 dark:text-orange-300">
-              {readyForPayment.length} villa(s) reached 7+ juices — payment due!
+              {readyForPayment.length} villa(s) reached payment threshold — payment due!
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {readyForPayment.map((c) => (
-              <Badge key={c.id} className="bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100 cursor-pointer" onClick={() => togglePayment(c.id)}>
-                Villa {c.villa_number} — {customerJuiceCounts[c.id]} juices → Add Payment
-              </Badge>
-            ))}
+            {readyForPayment.map((c) => {
+              const counts = customerJuiceCounts[c.id];
+              const threshold = (c as any).payment_threshold ?? 7;
+              return (
+                <Badge key={c.id} className="bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100 cursor-pointer" onClick={() => togglePayment(c.id)}>
+                  Villa {c.villa_number} — {counts?.chargeable || 0}/{threshold} juices
+                  {(counts?.complimentary || 0) > 0 && ` (+${counts.complimentary} free)`}
+                  → Add Payment
+                </Badge>
+              );
+            })}
           </div>
         </Card>
       )}
 
       {/* Customer payment list */}
       <div className="space-y-2">
-        {customers.filter((c) => c.is_active).map((c) => {
+        {sortedCustomers.filter((c) => c.is_active).map((c) => {
           const payment = getPayment(c.id);
           const isPaid = payment?.status === "paid";
+          const counts = customerJuiceCounts[c.id];
           return (
             <Card key={c.id} className="p-3">
               <div className="flex items-center justify-between gap-2">
@@ -163,6 +199,12 @@ const PaymentTracking = () => {
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-xs">No record</Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-0.5 text-xs text-muted-foreground">
+                    <span>Chargeable: {counts?.chargeable || 0}</span>
+                    {(counts?.complimentary || 0) > 0 && (
+                      <span className="flex items-center gap-0.5 text-purple-600"><Gift className="h-3 w-3" /> Free: {counts.complimentary}</span>
                     )}
                   </div>
                   {payment?.paid_date && <p className="text-xs text-muted-foreground mt-0.5">Paid on {payment.paid_date}</p>}
@@ -192,10 +234,35 @@ const PaymentTracking = () => {
         <DialogContent className="max-w-xs">
           <DialogHeader><DialogTitle>Add Payment Record</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{selectedCustomer?.name} — {format(new Date(month + "-01"), "MMMM yyyy")}</p>
+            <p className="text-sm text-muted-foreground">{selectedCustomer?.name} — Villa {selectedCustomer?.villa_number} — {format(new Date(month + "-01"), "MMMM yyyy")}</p>
+            
+            <div>
+              <Label className="text-xs">Pricing Plan</Label>
+              <Select value={String(pricingOption)} onValueChange={(v) => {
+                const val = Number(v);
+                setPricingOption(val);
+                if (val > 0) setAmount(String(val));
+                else setAmount("");
+              }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRICING_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={String(p.value)}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div>
               <Label className="text-xs">Amount (₹)</Label>
-              <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus placeholder="e.g. 1999" />
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                autoFocus={pricingOption === -1}
+                placeholder="e.g. 500"
+                readOnly={pricingOption > 0}
+              />
             </div>
             <Button onClick={createPayment} className="w-full bg-primary text-primary-foreground">Create Record</Button>
           </div>

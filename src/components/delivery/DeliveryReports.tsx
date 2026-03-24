@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Download, Printer, BarChart3, ArrowLeft } from "lucide-react";
+import { Download, Printer, BarChart3, ArrowLeft, Gift } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -38,29 +38,33 @@ const DeliveryReports = () => {
 
   const filtered = juiceFilter === "All" ? deliveries : deliveries.filter((d) => d.juice_type === juiceFilter);
 
-  const delivered = filtered.filter((d) => d.status === "delivered").length;
-  const pending = filtered.filter((d) => d.status === "pending").length;
-  const skipped = filtered.filter((d) => d.status === "skipped").length;
-  const missed = filtered.filter((d) => d.status === "missed").length;
+  // Use QUANTITY sums, not record counts
+  const deliveredQtyTotal = filtered.filter((d) => d.status === "delivered").reduce((s, d) => s + (d.quantity || 1), 0);
+  const pendingQtyTotal = filtered.filter((d) => d.status === "pending").reduce((s, d) => s + (d.quantity || 1), 0);
+  const skippedQtyTotal = filtered.filter((d) => d.status === "skipped").reduce((s, d) => s + (d.quantity || 1), 0);
+  const missedQtyTotal = filtered.filter((d) => d.status === "missed").reduce((s, d) => s + (d.quantity || 1), 0);
+  const totalQty = filtered.reduce((s, d) => s + (d.quantity || 1), 0);
+  const complimentaryQty = filtered.filter((d) => d.status === "delivered" && (d as any).is_complimentary).reduce((s, d) => s + (d.quantity || 1), 0);
 
-  // Juice breakdown
+  // Juice breakdown - sum quantities
   const juiceBreakdown: Record<string, number> = {};
   filtered.filter((d) => d.status === "delivered").forEach((d) => {
     const qty = d.quantity || 1;
     juiceBreakdown[d.juice_type] = (juiceBreakdown[d.juice_type] || 0) + qty;
   });
-  const deliveredQty = Object.values(juiceBreakdown).reduce((s, v) => s + v, 0);
 
-  // Customer stats sorted by villa ascending
+  // Customer stats sorted by villa ascending - use QUANTITY sums
   const customerStats = customers.map((c) => {
     const cDeliveries = filtered.filter((d) => d.customer_id === c.id);
     return {
       id: c.id,
       name: c.name,
       villa: c.villa_number,
-      total: cDeliveries.length,
-      delivered: cDeliveries.filter((d) => d.status === "delivered").length,
-      skipped: cDeliveries.filter((d) => d.status === "skipped").length,
+      total: cDeliveries.reduce((s, d) => s + (d.quantity || 1), 0),
+      delivered: cDeliveries.filter((d) => d.status === "delivered").reduce((s, d) => s + (d.quantity || 1), 0),
+      skipped: cDeliveries.filter((d) => d.status === "skipped").reduce((s, d) => s + (d.quantity || 1), 0),
+      complimentary: cDeliveries.filter((d) => d.status === "delivered" && (d as any).is_complimentary).reduce((s, d) => s + (d.quantity || 1), 0),
+      chargeable: cDeliveries.filter((d) => d.status === "delivered" && !(d as any).is_complimentary).reduce((s, d) => s + (d.quantity || 1), 0),
     };
   }).filter((c) => c.total > 0).sort((a, b) => a.villa.localeCompare(b.villa, undefined, { numeric: true }));
 
@@ -74,9 +78,9 @@ const DeliveryReports = () => {
   const exportCSV = () => {
     const rows = filtered.map((d) => {
       const c = customers.find((cu) => cu.id === d.customer_id);
-      return `${d.delivery_date},${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status}`;
+      return `${d.delivery_date},${c?.name || ""},${c?.villa_number || ""},${d.juice_type},${d.quantity || 1},${d.status},${(d as any).is_complimentary ? "Yes" : "No"}`;
     });
-    const csv = `Date,Name,Villa,Juice,Qty,Status\n${rows.join("\n")}`;
+    const csv = `Date,Name,Villa,Juice,Qty,Status,Complimentary\n${rows.join("\n")}`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `report-${startDate}-${endDate}.csv`; a.click();
@@ -112,11 +116,12 @@ const DeliveryReports = () => {
       </Card>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-bold text-foreground">{filtered.length}</p></Card>
-        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Delivered</p><p className="text-xl font-bold text-green-600">{delivered}</p></Card>
-        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Pending</p><p className="text-xl font-bold text-yellow-600">{pending}</p></Card>
-        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Skipped</p><p className="text-xl font-bold text-red-500">{skipped}</p></Card>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-bold text-foreground">{totalQty}</p></Card>
+        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Delivered</p><p className="text-xl font-bold text-green-600">{deliveredQtyTotal}</p></Card>
+        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Pending</p><p className="text-xl font-bold text-yellow-600">{pendingQtyTotal}</p></Card>
+        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Skipped</p><p className="text-xl font-bold text-red-500">{skippedQtyTotal}</p></Card>
+        <Card className="p-3 text-center"><p className="text-xs text-muted-foreground">Complimentary</p><p className="text-xl font-bold text-purple-600">{complimentaryQty}</p></Card>
       </div>
 
       {/* Juice breakdown */}
@@ -127,7 +132,7 @@ const DeliveryReports = () => {
             <div key={juice} className="flex items-center gap-3">
               <span className="text-sm text-foreground w-28">{juice}</span>
               <div className="flex-1 bg-secondary rounded-full h-4 overflow-hidden">
-                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${deliveredQty > 0 ? (count / deliveredQty) * 100 : 0}%` }} />
+                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${deliveredQtyTotal > 0 ? (count / deliveredQtyTotal) * 100 : 0}%` }} />
               </div>
               <span className="text-xs text-muted-foreground w-8 text-right">{count}</span>
             </div>
@@ -143,7 +148,7 @@ const DeliveryReports = () => {
           <table className="w-full text-sm">
             <thead><tr className="border-b text-muted-foreground text-xs">
               <th className="text-left py-2">Customer</th><th className="text-left py-2">Villa</th>
-              <th className="text-center py-2">Total</th><th className="text-center py-2">Delivered</th><th className="text-center py-2">Skipped</th>
+              <th className="text-center py-2">Total</th><th className="text-center py-2">Delivered</th><th className="text-center py-2">Comp.</th><th className="text-center py-2">Chargeable</th><th className="text-center py-2">Skipped</th>
             </tr></thead>
             <tbody>
               {customerStats.map((c) => (
@@ -160,6 +165,8 @@ const DeliveryReports = () => {
                   </td>
                   <td className="py-2 text-center">{c.total}</td>
                   <td className="py-2 text-center text-green-600">{c.delivered}</td>
+                  <td className="py-2 text-center text-purple-600">{c.complimentary}</td>
+                  <td className="py-2 text-center font-bold text-foreground">{c.chargeable}</td>
                   <td className="py-2 text-center text-red-500">{c.skipped}</td>
                 </tr>
               ))}
@@ -181,7 +188,7 @@ const DeliveryReports = () => {
           </DialogHeader>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground mb-3">
-              Showing deliveries from {startDate} to {endDate} ({villaDeliveries.length} records)
+              Showing deliveries from {startDate} to {endDate} ({villaDeliveries.reduce((s, d) => s + (d.quantity || 1), 0)} juices in {villaDeliveries.length} records)
             </p>
             {villaDeliveries.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">No deliveries found for this period.</p>
@@ -194,6 +201,7 @@ const DeliveryReports = () => {
                       <th className="text-left py-2">Juice</th>
                       <th className="text-center py-2">Qty</th>
                       <th className="text-center py-2">Status</th>
+                      <th className="text-center py-2">Type</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -211,6 +219,15 @@ const DeliveryReports = () => {
                           }`}>
                             {d.status}
                           </Badge>
+                        </td>
+                        <td className="py-1.5 text-center">
+                          {(d as any).is_complimentary ? (
+                            <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+                              <Gift className="h-3 w-3 mr-0.5" /> Free
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Paid</span>
+                          )}
                         </td>
                       </tr>
                     ))}

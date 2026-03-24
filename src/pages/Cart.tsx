@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { format as formatDate } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -170,6 +171,61 @@ const Cart = () => {
 
       const { error: itemsError } = await supabase.from("order_items").insert(orderItems as never[]);
       if (itemsError) throw itemsError;
+
+      // Sync to delivery system: create customer if needed, add deliveries, create paid payment
+      try {
+        // Check if customer exists by phone or name+address
+        const { data: existingCustomers } = await supabase
+          .from("delivery_customers")
+          .select("id")
+          .eq("name", form.name.trim())
+          .limit(1);
+
+        let deliveryCustomerId: string;
+        if (existingCustomers && existingCustomers.length > 0) {
+          deliveryCustomerId = existingCustomers[0].id;
+        } else {
+          // Create new delivery customer from order info
+          const { data: newCust } = await supabase.from("delivery_customers").insert({
+            name: form.name.trim(),
+            villa_number: form.address.trim().slice(0, 20),
+            phone: form.phone.trim(),
+            subscription_plan: "daily",
+            delivery_frequency: "daily",
+            preferred_juice: items[0]?.name || "Custom",
+            notes: `Online order #${orderId.slice(0, 8)}`,
+          } as any).select("id").single();
+          deliveryCustomerId = newCust?.id || "";
+        }
+
+        if (deliveryCustomerId) {
+          const todayStr = new Date().toISOString().split("T")[0];
+          const monthStr = formatDate(new Date(), "yyyy-MM");
+
+          // Create delivery records for each item
+          const deliveryRows = items.map((item) => ({
+            customer_id: deliveryCustomerId,
+            delivery_date: todayStr,
+            juice_type: item.name,
+            quantity: item.quantity,
+            status: "delivered",
+            is_complimentary: false,
+          }));
+          await supabase.from("deliveries").insert(deliveryRows as any[]);
+
+          // Create payment record marked as paid
+          await supabase.from("delivery_payments").insert({
+            customer_id: deliveryCustomerId,
+            month: monthStr,
+            amount: totalPrice,
+            status: "paid",
+            paid_date: todayStr,
+          } as any);
+        }
+      } catch (syncErr) {
+        // Don't fail the order if delivery sync fails
+        console.warn("Delivery sync failed:", syncErr);
+      }
 
       const summary: PlacedOrderSummary = {
         id: orderId,

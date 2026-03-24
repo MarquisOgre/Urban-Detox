@@ -21,7 +21,7 @@ type Subscription = { juice_type: string; quantity: number };
 const emptyForm = {
   name: "", villa_number: "", phone: "", subscription_plan: "daily",
   delivery_frequency: "daily", preferred_juice: "Ash Gourd", start_date: new Date().toISOString().split("T")[0],
-  notes: "", is_active: true,
+  notes: "", is_active: true, payment_threshold: 7,
 };
 
 const CustomerManagement = () => {
@@ -47,7 +47,12 @@ const CustomerManagement = () => {
     },
   });
 
-  const filtered = customers.filter((c) =>
+  // Sort numerically by villa number
+  const sortedCustomers = [...customers].sort((a, b) =>
+    a.villa_number.localeCompare(b.villa_number, undefined, { numeric: true })
+  );
+
+  const filtered = sortedCustomers.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.villa_number.toLowerCase().includes(search.toLowerCase()) ||
     (c.phone || "").includes(search)
@@ -70,6 +75,7 @@ const CustomerManagement = () => {
       subscription_plan: c.subscription_plan, delivery_frequency: c.delivery_frequency,
       preferred_juice: c.preferred_juice, start_date: c.start_date || emptyForm.start_date,
       notes: c.notes || "", is_active: c.is_active,
+      payment_threshold: (c as any).payment_threshold ?? 7,
     });
     const subs = getCustomerSubs(c.id);
     setSubscriptions(subs.length > 0
@@ -94,6 +100,10 @@ const CustomerManagement = () => {
     setSubscriptions(updated);
   };
 
+  // Auto-calculate suggested price
+  const totalSubQty = subscriptions.reduce((s, sub) => s + sub.quantity, 0);
+  const suggestedPrice = totalSubQty * 500;
+
   const save = async () => {
     if (!form.name || !form.villa_number) { toast.error("Name and Villa are required"); return; }
     const payload = {
@@ -105,11 +115,11 @@ const CustomerManagement = () => {
     let customerId: string;
 
     if (editing) {
-      const { error } = await supabase.from("delivery_customers").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("delivery_customers").update(payload as any).eq("id", editing.id);
       if (error) { toast.error("Update failed"); return; }
       customerId = editing.id;
     } else {
-      const { data, error } = await supabase.from("delivery_customers").insert(payload).select("id").single();
+      const { data, error } = await supabase.from("delivery_customers").insert(payload as any).select("id").single();
       if (error || !data) { toast.error("Add failed"); return; }
       customerId = data.id;
     }
@@ -174,8 +184,8 @@ const CustomerManagement = () => {
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                     {c.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
                     <span>📅 {c.delivery_frequency}</span>
+                    <span>💰 Threshold: {(c as any).payment_threshold ?? 7} juices</span>
                   </div>
-                  {/* Show subscriptions */}
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
                     {subs.length > 0 ? subs.map((s: any, i: number) => (
                       <Badge key={i} variant="secondary" className="text-xs">
@@ -263,6 +273,21 @@ const CustomerManagement = () => {
                   )}
                 </div>
               ))}
+              <p className="text-xs text-muted-foreground">
+                Suggested price: <strong className="text-primary">₹{suggestedPrice}</strong> ({totalSubQty} juice{totalSubQty > 1 ? "s" : ""} × 7 days × ₹500/juice-week)
+              </p>
+            </div>
+
+            {/* Payment Threshold */}
+            <div>
+              <Label className="text-xs">Payment Threshold (juices before payment due)</Label>
+              <Input
+                type="number"
+                min={1}
+                value={form.payment_threshold}
+                onChange={(e) => setForm({ ...form, payment_threshold: Math.max(1, parseInt(e.target.value) || 7) })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Default: 7 juices. Notification triggers when this many juices are delivered.</p>
             </div>
 
             <div>
