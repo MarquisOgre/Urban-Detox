@@ -20,6 +20,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import DeliveryTracker from "./pages/DeliveryTracker";
+import DownloadPdf from "./pages/DownloadPdf";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
