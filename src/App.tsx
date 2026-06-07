@@ -47,6 +47,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/admin/deliveries" element={<DeliveryTracker />} />
+              <Route path="/download" element={<DownloadPdf />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <WhatsAppButton />
