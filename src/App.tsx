@@ -20,6 +20,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import DeliveryTracker from "./pages/DeliveryTracker";
+import DownloadPdf from "./pages/DownloadPdf";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/admin/deliveries" element={<DeliveryTracker />} />
+              <Route path="/download" element={<DownloadPdf />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <WhatsAppButton />
