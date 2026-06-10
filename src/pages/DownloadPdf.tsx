@@ -34,12 +34,15 @@ const DownloadPdf = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md shadow-xl border-2">
           <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-              <Download className="w-8 h-8 text-primary" />
-            </div>
-            <CardTitle className="text-2xl font-bold">
-              Urban Detox — Benefits & Diet
-            </CardTitle>
+            
+<CardTitle className="text-2xl font-bold flex flex-col items-center text-center">
+  <img
+    src="/UrbanDetox-Logo.png"
+    alt="Urban Detox"
+    className="h-12 mb-2"
+  />
+  <span>Benefits & Diet Plans</span>
+</CardTitle>
             <p className="text-muted-foreground text-sm">
               Scan the QR code with your phone to download the PDF
             </p>
