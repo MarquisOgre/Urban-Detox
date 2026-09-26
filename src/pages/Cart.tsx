@@ -349,49 +349,79 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-14">
-      <PromoBanner />
-      <Navbar />
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background px-4 py-6 md:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1400px]">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="font-display text-3xl font-bold text-foreground">
-            <span className="text-gradient-nature">Checkout</span>
-          </h1>
+          <h1 className="font-display text-3xl font-bold text-primary md:text-4xl">Checkout</h1>
           <Link to="/recent-orders">
-            <Button variant="outline" size="icon" aria-label="Recent Orders">
-              <History className="h-5 w-5" />
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Recent Orders"
+              className="h-10 w-10 rounded-xl border-border bg-background"
+            >
+              <History className="h-4 w-4" />
             </Button>
           </Link>
         </div>
 
-        <form onSubmit={handleCheckout} className="mt-8 grid gap-6 lg:grid-cols-3">
-          <Card className="p-6">
-            <h3 className="font-display text-lg font-bold text-foreground">Order Summary</h3>
-            <div className="mt-4 space-y-3">
+        <form onSubmit={handleCheckout} className="mt-8 grid items-stretch gap-6 lg:grid-cols-3">
+          <Card className="min-h-[455px] rounded-xl border-border bg-card p-6 shadow-sm">
+            <h3 className="font-display text-xl font-bold text-foreground">Order Summary</h3>
+
+            <div className="mt-5 space-y-3">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <img src={item.image_url || "/placeholder.svg"} alt={item.name} className="h-10 w-10 shrink-0 rounded object-cover" />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
-                      <div className="mt-1 flex items-center gap-1">
-                        <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-6 text-center text-xs">{item.quantity}</span>
-                        <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon" className="ml-1 h-6 w-6" onClick={() => removeItem(item.id)}>
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
-                      </div>
+                <div key={item.id} className="flex items-center gap-2 border-b border-border pb-4">
+                  <img
+                    src={item.image_url || "/placeholder.svg"}
+                    alt={item.name}
+                    className="h-10 w-10 shrink-0 rounded object-cover"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+                    <div className="mt-1.5 flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6 rounded-full"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-6 text-center text-xs">{item.quantity}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6 rounded-full"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="ml-1 h-6 w-6"
+                        onClick={() => removeItem(item.id)}
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
                     </div>
                   </div>
-                  <span className="shrink-0 text-sm font-semibold text-foreground">₹{item.price * item.quantity}</span>
+
+                  <span className="shrink-0 text-sm font-semibold text-foreground">
+                    ₹{item.price * item.quantity}
+                  </span>
                 </div>
               ))}
             </div>
+
             <div className="mt-4 border-t border-border pt-4">
               <div className="flex justify-between font-display text-lg font-bold">
                 <span className="text-foreground">Total</span>
@@ -400,39 +430,98 @@ const Cart = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h3 className="font-display text-lg font-bold text-foreground">Your Details</h3>
-            <div className="mt-4 space-y-4">
+          <Card className="min-h-[455px] rounded-xl border-border bg-card p-6 shadow-sm">
+            <h3 className="font-display text-xl font-bold text-foreground">Your Details</h3>
+
+            <div className="mt-5 space-y-4">
               <div>
-                <Label className="text-foreground">Full Name <span className="text-destructive">*</span></Label>
-                <Input placeholder="Enter your name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" />
+                <Label className="text-foreground">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  placeholder="Enter your name"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="mt-2 h-10"
+                />
               </div>
+
               <div>
                 <Label className="text-foreground">Email</Label>
-                <Input placeholder="Enter email (optional)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1" />
+                <Input
+                  placeholder="Enter email (optional)"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="mt-2 h-10"
+                />
               </div>
+
               <div>
-                <Label className="text-foreground">Phone Number <span className="text-destructive">*</span></Label>
-                <Input placeholder="10-digit mobile number" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1" />
+                <Label className="text-foreground">
+                  Phone Number <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  placeholder="10-digit mobile number"
+                  required
+                  inputMode="numeric"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  value={form.phone}
+                  onChange={(e) =>
+                    setForm({ ...form, phone: e.target.value.replace(/\\D/g, "").slice(0, 10) })
+                  }
+                  className="mt-2 h-10"
+                />
               </div>
+
               <div>
-                <Label className="text-foreground">Delivery Address <span className="text-destructive">*</span></Label>
-                <Textarea placeholder="Enter full address" required rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1" />
+                <Label className="text-foreground">
+                  Delivery Address <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  placeholder="Enter full address"
+                  required
+                  rows={3}
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  className="mt-2 min-h-[80px] resize-none"
+                />
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h3 className="font-display text-lg font-bold text-foreground">Payment</h3>
+          <Card className="min-h-[455px] rounded-xl border-border bg-card p-6 shadow-sm">
+            <h3 className="font-display text-xl font-bold text-foreground">Payment</h3>
+
             {!detailsFilled ? (
-              <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center">
-                <p className="text-sm text-muted-foreground">Please fill in your details correctly to proceed with payment.</p>
+              <div className="mt-5 flex min-h-[90px] items-center justify-center rounded-xl border border-dashed border-border px-6 text-center">
+                <p className="max-w-xs text-sm text-muted-foreground">
+                  Please fill in your details correctly to proceed with payment.
+                </p>
               </div>
             ) : (
-              <div className="mt-4 space-y-4">
+              <div className="mt-5 space-y-4">
                 {paymentSettings?.cod_enabled !== false && (
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => { setPaymentMethod("cod"); setUpiStep("select"); }} className="accent-primary" />
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+                      paymentMethod === "cod"
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="cod"
+                      checked={paymentMethod === "cod"}
+                      onChange={() => {
+                        setPaymentMethod("cod");
+                        setUpiStep("select");
+                      }}
+                      className="accent-primary"
+                    />
                     <div>
                       <p className="font-medium text-foreground">Cash on Delivery</p>
                       <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
@@ -441,11 +530,29 @@ const Cart = () => {
                 )}
 
                 {paymentSettings?.upi_enabled && (
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "upi" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <input type="radio" name="payment" value="upi" checked={paymentMethod === "upi"} onChange={() => { setPaymentMethod("upi"); setUpiStep("qr"); }} className="accent-primary" />
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
+                      paymentMethod === "upi"
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="upi"
+                      checked={paymentMethod === "upi"}
+                      onChange={() => {
+                        setPaymentMethod("upi");
+                        setUpiStep("qr");
+                      }}
+                      className="accent-primary"
+                    />
                     <div>
                       <p className="font-medium text-foreground">UPI Payment</p>
-                      <p className="text-xs text-muted-foreground">Pay via UPI: {paymentSettings.upi_id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Pay via UPI: {paymentSettings.upi_id}
+                      </p>
                     </div>
                   </label>
                 )}
@@ -454,43 +561,83 @@ const Cart = () => {
                   <div className="space-y-4">
                     {upiStep === "qr" && (
                       <div className="space-y-3 rounded-lg border border-border p-4 text-center">
-                        <p className="text-sm font-medium text-foreground">Scan QR Code to Pay ₹{totalPrice.toFixed(2)}</p>
+                        <p className="text-sm font-medium text-foreground">
+                          Scan QR Code to Pay ₹{totalPrice.toFixed(2)}
+                        </p>
                         {paymentSettings.qr_code_url && (
-                          <img src={paymentSettings.qr_code_url} alt="UPI QR Code" className="mx-auto h-52 w-52 rounded-lg object-contain" />
+                          <img
+                            src={paymentSettings.qr_code_url}
+                            alt="UPI QR Code"
+                            className="mx-auto h-52 w-52 rounded-lg object-contain"
+                          />
                         )}
-                        <p className="text-xs text-muted-foreground">UPI ID: {paymentSettings.upi_id}</p>
-                        <Button type="button" onClick={() => setUpiStep("txn")} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
-                          <CheckCircle className="mr-2 h-4 w-4" /> I've Made the Payment
+                        <p className="text-xs text-muted-foreground">
+                          UPI ID: {paymentSettings.upi_id}
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={() => setUpiStep("txn")}
+                          className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          I've Made the Payment
                         </Button>
                       </div>
                     )}
 
                     {upiStep === "txn" && (
                       <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
-                        <p className="text-sm font-medium text-foreground">Enter UPI Transaction ID</p>
-                        <p className="text-xs text-muted-foreground">Please enter the transaction/reference ID from your UPI app to confirm payment.</p>
-                        <Input placeholder="e.g. 412345678901" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
-                        <div className="flex gap-2">
-                          <Button type="button" variant="outline" size="sm" onClick={() => setUpiStep("qr")}>Back</Button>
-                        </div>
+                        <p className="text-sm font-medium text-foreground">
+                          Enter UPI Transaction ID
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Please enter the transaction/reference ID from your UPI app to confirm payment.
+                        </p>
+                        <Input
+                          placeholder="e.g. 412345678901"
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUpiStep("qr")}
+                        >
+                          Back
+                        </Button>
                       </div>
                     )}
                   </div>
                 )}
 
                 {paymentMethod === "cod" ? (
-                  <Button type="submit" disabled={submitting} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
+                  >
                     {submitting ? "Placing Order..." : "Place Order"}
                   </Button>
                 ) : upiStep === "txn" ? (
-                  <Button type="submit" disabled={submitting || !transactionId.trim()} className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90">
+                  <Button
+                    type="submit"
+                    disabled={submitting || !transactionId.trim()}
+                    className="w-full bg-nature-gradient text-primary-foreground hover:opacity-90"
+                  >
                     {submitting ? "Placing Order..." : "Place Order"}
                   </Button>
                 ) : null}
 
                 {whatsappOrderUrl && (
-                  <Button type="button" variant="outline" className="w-full" onClick={() => openWhatsAppLink(whatsappOrderUrl)}>
-                    <MessageCircle className="mr-2 h-4 w-4" /> Order on WhatsApp
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => openWhatsAppLink(whatsappOrderUrl)}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Order on WhatsApp
                   </Button>
                 )}
               </div>
@@ -498,9 +645,8 @@ const Cart = () => {
           </Card>
         </form>
       </main>
-      <Footer />
     </div>
-  );
+  );  );
 };
 
 export default Cart;
