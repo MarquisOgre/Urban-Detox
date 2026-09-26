@@ -61,7 +61,10 @@ const Cart = () => {
   });
 
   const detailsFilled = useMemo(
-    () => form.name.trim() !== "" && form.phone.trim() !== "" && form.address.trim() !== "",
+    () =>
+      form.name.trim() !== "" &&
+      /^[0-9]{10}$/.test(form.phone.trim()) &&
+      form.address.trim() !== "",
     [form.name, form.phone, form.address],
   );
 
@@ -471,6 +474,9 @@ const Cart = () => {
                   value={form.phone}
                   onChange={(e) =>
                     setForm({ ...form, phone: e.target.value.replace(/\\D/g, "").slice(0, 10) })
+                  }
+                  onBlur={() =>
+                    setForm({ ...form, phone: form.phone.replace(/\\D/g, "").slice(0, 10) })
                   }
                   className="mt-2 h-10"
                 />
